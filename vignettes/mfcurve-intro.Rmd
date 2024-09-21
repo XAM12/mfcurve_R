@@ -1,8 +1,9 @@
+
 ---
 title: "Introduction to mfcurve"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{mfcurve-intro}
+  %\VignetteIndexEntry{Introduction to mfcurve}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -12,12 +13,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-```
-
-```{r}
-# Load necessary libraries
-library(mfcurve)
-library(ggplot2)
 ```
 
 # mfcurve: Multi-Factor Curve Analysis in R
@@ -30,14 +25,13 @@ library(ggplot2)
 
 To install the package from GitHub, you can use the following commands:
 
-```{r}
+```{r, eval = FALSE}
 # Install devtools if not already installed
 install.packages("devtools")
 
 # Install mfcurve package from GitHub
 devtools::install_github("cweileder/mfcurve")
 ```
-
 
 ## Key Features
 
@@ -49,7 +43,11 @@ devtools::install_github("cweileder/mfcurve")
 
 ### 1. Preprocessing Data
 
-```{r}
+```{r, eval = FALSE}
+# Load necessary libraries
+library(mfcurve)
+library(dplyr)
+
 # Sample data
 data <- data.frame(
   wage = c(10, 20, 30, 40, 15, 25, 35, 45),
@@ -66,7 +64,7 @@ print(preprocessed_data)
 
 ### 2. Conducting Statistical Tests
 
-```{r}
+```{r, eval = FALSE}
 # Conduct statistical tests
 test_results <- mfcurve_stat_test(preprocessed_data, level = 0.05, test = "mean")
 
@@ -76,7 +74,7 @@ print(test_results)
 
 ### 3. Plotting the Results
 
-```{r}
+```{r, eval = FALSE}
 # Plot the results
 mfcurve_plot(test_results)
 ```
