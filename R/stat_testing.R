@@ -1,15 +1,10 @@
 # File: R/stat_testing.R
-
-# Correct @importFrom tags, ensuring they are placed correctly
-#' @importFrom dplyr rowwise mutate ungroup
-#' @importFrom stats pt qt
-
-# Title line for the function documentation
 #' Conduct Statistical Tests for Group Differences
 #'
 #' This function performs statistical tests (e.g., t-tests) between group means
 #' and flags significant differences.
-#'
+#' @importFrom dplyr rowwise mutate ungroup
+#' @importFrom stats pt qt
 #' @param data A data frame containing grouped data with means, standard deviations, and counts.
 #' @param level Significance level (default is 0.05).
 #' @param test Type of test ("mean" or "zero") to compare group means or test against zero.
