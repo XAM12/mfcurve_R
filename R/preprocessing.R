@@ -21,30 +21,39 @@ mfcurve_preprocessing <- function(data, outcome_var, factors, groupvar = NULL) {
     stop("One or more factor variables not found in the dataset.")
   }
 
+  # Convert outcome_var to a symbol
+  outcome_var_sym <- rlang::sym(outcome_var)
+
   # Remove observations with missing values in outcome or factor variables
   data_clean <- data %>%
-    dplyr::filter(!is.na(rlang::sym(outcome_var))) %>%
+    dplyr::filter(!is.na(!!outcome_var_sym)) %>%
     dplyr::filter(!dplyr::if_any(dplyr::all_of(factors), is.na))
 
   # Create a group variable if not provided
   if (is.null(groupvar)) {
+    # Group by interaction of factors
     data_clean <- data_clean %>%
       dplyr::mutate(group = interaction(!!!rlang::syms(factors), drop = TRUE))
   } else {
+    # Ensure groupvar is present in the data
+    if (!groupvar %in% colnames(data_clean)) {
+      stop("Group variable not found in the dataset.")
+    }
+    # Use the provided group variable for grouping
     data_clean <- data_clean %>%
-      dplyr::filter(!is.na(rlang::sym(groupvar))) %>%
-      dplyr::mutate(group = rlang::sym(groupvar))
+      dplyr::filter(!is.na(!!rlang::sym(groupvar))) %>%
+      dplyr::mutate(group = !!rlang::sym(groupvar))
   }
 
-  # Reduce data to unique factor combinations
+  # Reduce data to unique factor combinations and summarize
   data_clean <- data_clean %>%
     dplyr::group_by(group) %>%
     dplyr::summarise(
-      mean_outcome = mean(!!rlang::sym(outcome_var), na.rm = TRUE),
-      sd_outcome = sd(!!rlang::sym(outcome_var), na.rm = TRUE),
-      n = dplyr::n()
-    ) %>%
-    dplyr::ungroup()
+      mean_outcome = mean(!!outcome_var_sym, na.rm = TRUE),
+      sd_outcome = sd(!!outcome_var_sym, na.rm = TRUE),
+      n = dplyr::n(),
+      .groups = 'drop' # Ensures ungrouped output after summarise
+    )
 
   return(data_clean)
 }

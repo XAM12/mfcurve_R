@@ -1,25 +1,16 @@
+# mfcurve: Multi-Factor Curve Analysis in R
 
-# mfcurve
+## Overview
 
-<!-- badges: start -->
-<!-- badges: end -->
-
-The goal of mfcurve is to ...
+`mfcurve` is an R package designed for analyzing multi-factor models, similar to the Stata `mfcurve` ado file. It provides functions for preprocessing data, conducting statistical tests, and generating visualizations to explore group differences in mean outcomes with confidence intervals.
 
 ## Installation
 
-You can install the development version of mfcurve like so:
+To install the package from GitHub, you can use the following commands:
 
-``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
-```
+```r
+# Install devtools if not already installed
+install.packages("devtools")
 
-## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-library(mfcurve)
-## basic example code
-```
-
+# Install mfcurve package from GitHub
+devtools::install_github("cweileder/mfcurve")
