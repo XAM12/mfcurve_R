@@ -13,12 +13,29 @@ mfcurve_preprocessing(data, outcome_var, factors, groupvar = NULL)
 
 \item{factors}{Character vector of factor variable names to group by (e.g., c("race", "union")).}
 
-\item{groupvar}{Optional character string specifying a predefined group variable.}
+\item{groupvar}{Optional character string specifying a predefined group variable. If NULL, groups are created based on factor combinations.}
 }
 \value{
 A data frame summarizing the mean, standard deviation, and count for each group.
 }
 \description{
-This function preprocesses the data by filtering missing values,
-handling factors, and creating groups for analysis.
+This function preprocesses data for multi-factor curve analysis by filtering missing values,
+handling factors, and creating groups for analysis, replicating similar logic to the Stata 'mfcurve' ado file.
+}
+\examples{
+# Sample data
+data <- data.frame(
+  outcome = rnorm(100),
+  factor1 = factor(sample(letters[1:3], 100, replace = TRUE)),
+  factor2 = factor(sample(letters[4:5], 100, replace = TRUE))
+)
+
+# Preprocess data with interaction of factors
+result <- mfcurve_preprocessing(data, outcome_var = "outcome", factors = c("factor1", "factor2"))
+print(result)
+
+# Preprocess data using a predefined group variable
+data$groupvar <- sample(1:4, 100, replace = TRUE)
+result_groupvar <- mfcurve_preprocessing(data, outcome_var = "outcome", factors = c("factor1"), groupvar = "groupvar")
+print(result_groupvar)
 }

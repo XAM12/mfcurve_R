@@ -3,8 +3,3 @@
 export(mfcurve_plot)
 export(mfcurve_preprocessing)
 export(mfcurve_stat_test)
-importFrom(dplyr,mutate)
-importFrom(dplyr,rowwise)
-importFrom(dplyr,ungroup)
-importFrom(stats,pt)
-importFrom(stats,qt)

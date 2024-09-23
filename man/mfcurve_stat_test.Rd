@@ -2,21 +2,38 @@
 % Please edit documentation in R/stat_testing.R
 \name{mfcurve_stat_test}
 \alias{mfcurve_stat_test}
-\title{Conduct Statistical Tests for Group Differences}
+\title{Statistical Testing for mfcurve Analysis}
 \usage{
 mfcurve_stat_test(data, level = 0.05, test = "mean")
 }
 \arguments{
-\item{data}{A data frame containing grouped data with means, standard deviations, and counts.}
+\item{data}{A data frame containing the summarized results of the preprocessing step, with columns for group means, standard deviations, and counts.}
 
-\item{level}{Significance level (default is 0.05).}
+\item{level}{Confidence level for significance testing (e.g., 0.95 for a 95\% confidence interval).}
 
-\item{test}{Type of test ("mean" or "zero") to compare group means or test against zero.}
+\item{test}{The type of test to perform: "mean" (compares each group's mean against the mean of all other groups) or "zero" (compares each group's mean against zero).}
 }
 \value{
-A data frame with test results, confidence intervals, and significance flags.
+A data frame with the original data and added columns for t-values, p-values, significance flags, and confidence intervals.
 }
 \description{
-This function performs statistical tests (e.g., t-tests) between group means
-and flags significant differences.
+This function performs statistical testing on grouped data, comparing each group's mean
+against the mean of all other groups or zero, calculates confidence intervals, and flags significant results.
+}
+\examples{
+# Sample data
+data <- data.frame(
+  group = 1:4,
+  mean_outcome = c(10, 20, 15, 25),
+  sd_outcome = c(5, 6, 7, 8),
+  n = c(10, 12, 15, 8)
+)
+
+# Test each group against the mean of other groups
+test_result <- mfcurve_stat_test(data, test = "mean", level = 0.95)
+print(test_result)
+
+# Test each group against zero
+test_result_zero <- mfcurve_stat_test(data, test = "zero", level = 0.95)
+print(test_result_zero)
 }
