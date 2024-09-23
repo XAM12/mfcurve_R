@@ -16,4 +16,5 @@ VignetteBuilder: knitr
 Imports: 
     dplyr,
     ggplot2,
-    stats
+    stats,
+    magrittr
