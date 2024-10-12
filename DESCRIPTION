@@ -1,9 +1,11 @@
 Package: mfcurve
-Title: Multi-Factor Curve Analysis in R
-Version: 0.0.0.9000
+Title: Multi-Factor Curve Analysis for Grouped Data in R
+Version: 1.0.0
 Authors@R: 
-    person("Claudia", "Weileder", email = "you@example.com", role = c("aut", "cre"))
-Description: This package provides functions for multi-factor curve analysis in R, similar to the mfcurve ado in Stata.
+    person("Name", "surname", email = "", role = c("aut", "cre"))
+Description: Provides functions for multi-factor curve analysis, replicating and extending the functionality 
+    of the Stata mfcurve ado. Includes data preprocessing, statistical testing, and visualization of results 
+    with confidence intervals.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

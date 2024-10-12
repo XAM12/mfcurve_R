@@ -14,9 +14,6 @@
 #' created based on the combinations of the specified factors.
 #' @return A data frame summarizing the mean, standard deviation, and count for each group.
 #' @examples
-#' library(dplyr) #### DONT USE LIBRARY BC CRAN REQUIREMENT
-#' library(magrittr) # Ensure the pipe operator is available
-#'
 #' # Sample data creation
 #' data <- data.frame(
 #'   outcome = rnorm(100),

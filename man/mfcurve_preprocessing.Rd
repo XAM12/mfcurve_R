@@ -25,7 +25,7 @@ and creating groups for multi-factor curve analysis. It replicates the logic of 
 'mfcurve' ado file, allowing for flexible grouping based on combinations of factors or a predefined group variable.
 }
 \examples{
-library(dplyr)
+library(dplyr) #### DONT USE LIBRARY BC CRAN REQUIREMENT
 library(magrittr) # Ensure the pipe operator is available
 
 # Sample data creation
