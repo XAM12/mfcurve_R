@@ -34,43 +34,44 @@
 #' @export
 mfcurve_preprocessing <- function(data, outcome_var, factors, groupvar = NULL) {
 
-  # Ensure outcome_var and factors are in the data
-  if (!outcome_var %in% colnames(data)) {
-    stop("Outcome variable not found in the dataset.")
+  # Validate inputs
+  if (!is.data.frame(data)) {
+    stop("The 'data' argument must be a data frame.")
   }
-  if (!all(factors %in% colnames(data))) {
-    stop("One or more factor variables not found in the dataset.")
+
+  if (!outcome_var %in% colnames(data)) {
+    stop(sprintf("The specified outcome variable '%s' is not found in the dataset.", outcome_var))
+  }
+
+  missing_factors <- setdiff(factors, colnames(data))
+  if (length(missing_factors) > 0) {
+    stop(sprintf("The following factor variables are not found in the dataset: %s", paste(missing_factors, collapse = ", ")))
   }
 
   # Convert outcome_var to a symbol for dplyr operations
   outcome_var_sym <- rlang::sym(outcome_var)
 
   # Remove observations with missing values in the outcome or factor variables
-  # This replicates the Stata 'drop if missing' commands
   data_clean <- data %>%
     dplyr::filter(!is.na(!!outcome_var_sym)) %>% # Drop missing in outcome
     dplyr::filter(!dplyr::if_any(dplyr::all_of(factors), is.na)) # Drop missing in factors
 
-  # Create a group variable if not provided
+  # Create or validate group variable
   if (is.null(groupvar)) {
-    # Replicating Stata's logic for factor combinations
-    # Group by the interaction of factors, similar to how Stata creates artificial groups
+    # Create a group variable based on the interaction of factors
     data_clean <- data_clean %>%
-      dplyr::mutate(group = interaction(!!!rlang::syms(factors), drop = TRUE)) %>%
-      dplyr::mutate(group = as.numeric(factor(group))) # Convert to numeric similar to Stata
+      dplyr::mutate(group = as.numeric(interaction(!!!rlang::syms(factors), drop = TRUE)))
   } else {
-    # Ensure groupvar is present in the data
-    if (!groupvar %in% colnames(data_clean)) {
-      stop("Group variable not found in the dataset.")
+    if (!groupvar %in% colnames(data)) {
+      stop(sprintf("The specified group variable '%s' is not found in the dataset.", groupvar))
     }
-    # Use the provided group variable for grouping
+
     data_clean <- data_clean %>%
       dplyr::filter(!is.na(!!rlang::sym(groupvar))) %>% # Drop missing in groupvar
       dplyr::mutate(group = !!rlang::sym(groupvar))
   }
 
   # Summarize data: mean, standard deviation, and count for each group
-  # Replicating the Stata 'bysort group: egen group_mean = mean(varlist)'
   data_summary <- data_clean %>%
     dplyr::group_by(group) %>%
     dplyr::summarize(
