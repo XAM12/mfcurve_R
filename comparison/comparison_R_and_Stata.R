@@ -1,4 +1,4 @@
-# Load required libraries # must be changed
+# Load required libraries # must be changed but probably not nec in CRAN anyway
 library(dplyr)
 library(stringr)
 
