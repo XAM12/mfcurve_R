@@ -2,7 +2,7 @@
 
 ## Overview
 
-`mfcurve` is an R package designed for analyzing multi-factor models, replicating the functionality of the Stata `mfcurve` ado file. The package provides a streamlined workflow for:
+`mfcurve` is an R package designed for  plotting results from multifactorial research designs (i.e. conjoint analyses, choice experiments, factorial survey experiments), replicating the functionality of the Stata `mfcurve` ado file. The package provides a streamlined workflow for:
 - **Preprocessing data** to create grouped summaries.
 - **Conducting statistical tests** to compare group means and assess significance.
 - **Generating visualizations** to explore differences across groups, including confidence intervals and significance markers.
@@ -60,7 +60,6 @@ print(plot)
 ```
 
 ### Example Plot
-(Include a sample plot image here, or direct users to a vignette for a full example)
 
 ## Documentation
 
