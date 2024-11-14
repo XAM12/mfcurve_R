@@ -4,21 +4,21 @@
 \alias{mfcurve_stat_test}
 \title{Statistical Testing for mfcurve Analysis}
 \usage{
-mfcurve_stat_test(data, level = 0.05, test = "mean")
+mfcurve_stat_test(data, test = "mean", level = 0.05)
 }
 \arguments{
 \item{data}{A data frame containing the summarized results of the preprocessing step, with columns for group means, standard deviations, and counts.}
 
-\item{level}{Confidence level for significance testing (e.g., 0.95 for a 95\% confidence interval).}
+\item{test}{The type of test to perform: "mean" (compares each group's mean against the grand mean) or "zero" (compares each group's mean against zero).}
 
-\item{test}{The type of test to perform: "mean" (compares each group's mean against the mean of all other groups) or "zero" (compares each group's mean against zero).}
+\item{level}{Significance level for confidence intervals and hypothesis testing (e.g., 0.05 for 95\% confidence).}
 }
 \value{
 A data frame with the original data and added columns for t-values, p-values, significance flags, and confidence intervals.
 }
 \description{
 This function performs statistical testing on grouped data, comparing each group's mean
-against the mean of all other groups or zero, calculates confidence intervals, and flags significant results.
+against either the overall grand mean or zero, calculates confidence intervals, and flags significant results.
 }
 \examples{
 # Sample data
@@ -29,11 +29,11 @@ data <- data.frame(
   n = c(10, 12, 15, 8)
 )
 
-# Test each group against the mean of other groups
-test_result <- mfcurve_stat_test(data, test = "mean", level = 0.95)
+# Test each group against the grand mean
+test_result <- mfcurve_stat_test(data, test = "mean", level = 0.05)
 print(test_result)
 
 # Test each group against zero
-test_result_zero <- mfcurve_stat_test(data, test = "zero", level = 0.95)
+test_result_zero <- mfcurve_stat_test(data, test = "zero", level = 0.05)
 print(test_result_zero)
 }
