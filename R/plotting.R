@@ -1,39 +1,53 @@
-# File: R/plotting.R
-
-#' Plot Results of mfcurve Analysis
+#' Create an Interactive Plot with Plotly
 #'
-#' This function creates a plot of group means with confidence intervals,
-#' highlighting significant differences, replicating the graph logic from the Stata `mfcurve` ado.
+#' This function generates an interactive plot based on the `mfcurve` analysis results.
 #'
-#' @param data A data frame containing the results of the statistical tests.
-#' @param show_mean_line Logical; if TRUE, adds a line showing the overall mean.
-#' @param title The title of the plot.
-#' @return A ggplot object visualizing the group means and confidence intervals.
+#' @param data A data frame containing the results of the analysis.
+#' @param upper_panel_cols A named list specifying the x and y columns for the upper panel plot.
+#'        Example: list(x = "group", y = "mean_value").
+#' @param lower_panel_cols A named list specifying the x and y columns for the lower panel plot.
+#'        Example: list(x = "group", y = "ci_lower").
+#' @param show_title Logical; if TRUE, adds a title to the combined plot.
+#' @return A `plotly` object representing the combined plot.
 #' @export
-mfcurve_plot <- function(data, show_mean_line = TRUE, title = "mfcurve Analysis Results") {
+create_interactive_plot <- function(data, upper_panel_cols, lower_panel_cols, show_title = TRUE) {
+  library(plotly)
 
-  # Ensure required columns are present
-  if (!all(c("group", "mean_outcome", "ci_lower", "ci_upper", "significant") %in% colnames(data))) {
-    stop("Data must contain 'group', 'mean_outcome', 'ci_lower', 'ci_upper', and 'significant' columns.")
+  # Upper panel plot
+  upper_plot <- plot_ly(
+    data = data,
+    x = ~ get(upper_panel_cols$x),
+    y = ~ get(upper_panel_cols$y),
+    type = 'scatter',
+    mode = 'markers+lines',
+    name = 'Group Means'
+  )
+
+  # Lower panel plot
+  lower_plot <- plot_ly(
+    data = data,
+    x = ~ get(lower_panel_cols$x),
+    y = ~ get(lower_panel_cols$y),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(dash = 'dash'),
+    name = 'Confidence Interval'
+  )
+
+  # Combine plots
+  combined_plot <- subplot(
+    upper_plot,
+    lower_plot,
+    nrows = 2,
+    shareX = TRUE,
+    titleX = TRUE
+  )
+
+  # Add title to the combined plot if show_title is TRUE
+  if (show_title) {
+    combined_plot <- combined_plot %>% layout(title = "Interactive Plotly Visualization")
   }
 
-  # Calculate overall mean for optional mean line
-  overall_mean <- mean(data$mean_outcome, na.rm = TRUE)
-
-  # Create the base plot
-  plot <- ggplot2::ggplot(data, ggplot2::aes(x = reorder(group, mean_outcome), y = mean_outcome)) +
-    ggplot2::geom_point(ggplot2::aes(color = significant, shape = significant), size = 3) +
-    ggplot2::geom_errorbar(ggplot2::aes(ymin = ci_lower, ymax = ci_upper, color = significant), width = 0.2) +
-    ggplot2::scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black")) +
-    ggplot2::scale_shape_manual(values = c("TRUE" = 19, "FALSE" = 1)) +
-    ggplot2::labs(title = title, x = "Group", y = "Mean Outcome") +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
-
-  # Optionally add overall mean line
-  if (show_mean_line) {
-    plot <- plot + ggplot2::geom_hline(yintercept = overall_mean, linetype = "dashed", color = "blue")
-  }
-
-  return(plot)
+  # Return the combined plot object
+  return(combined_plot)
 }

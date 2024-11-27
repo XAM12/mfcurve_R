@@ -2,7 +2,7 @@ Package: mfcurve
 Title: Multi-Factor Curve Analysis for Grouped Data in R
 Version: 1.0.0
 Authors@R: 
-    person("Name", "surname", email = "", role = c("aut", "cre"))
+    person("Your", "Name", email = "your_email@example.com", role = c("aut", "cre"))
 Description: Provides functions for multi-factor curve analysis, replicating and extending the functionality 
     of the Stata mfcurve ado. Includes data preprocessing, statistical testing, and visualization of results 
     with confidence intervals.
@@ -11,12 +11,14 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Suggests: 
-    knitr,
-    rmarkdown
-VignetteBuilder: knitr
 Imports: 
     dplyr,
     ggplot2,
     stats,
-    magrittr
+    magrittr,
+    plotly,
+    rlang
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
