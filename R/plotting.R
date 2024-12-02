@@ -38,6 +38,9 @@ mfcurve_plotting <- function(stats, factors, outcome, alpha = 0.05, showTitle = 
     stop("The input data must include the columns: rank, mean_outcome, ci_lower, ci_upper, and group.")
   }
 
+  # Calculate the grand mean
+  grand_mean <- mean(stats$mean_outcome, na.rm = TRUE)
+
   # Separate group variable into individual factors
   stats <- stats %>%
     tidyr::separate(group, into = factors, sep = "_", remove = FALSE)
@@ -59,7 +62,7 @@ mfcurve_plotting <- function(stats, factors, outcome, alpha = 0.05, showTitle = 
   lower_data <- lower_data %>%
     dplyr::left_join(factor_positions, by = "factor")
 
-  # Upper panel plot
+  # Upper panel plot (group means with error bars)
   upper_plot <- plotly::plot_ly(
     data = stats,
     x = ~rank,
@@ -76,7 +79,19 @@ mfcurve_plotting <- function(stats, factors, outcome, alpha = 0.05, showTitle = 
     name = 'Group Means'
   )
 
-  # Lower panel plot
+  # Add grand mean line separately without inheriting error bars
+  upper_plot <- upper_plot %>%
+    plotly::add_trace(
+      x = c(min(stats$rank), max(stats$rank)),
+      y = c(grand_mean, grand_mean),
+      type = 'scatter',
+      mode = 'lines',
+      line = list(dash = 'dash', color = 'orange'),
+      name = 'Grand Mean',
+      inherit = FALSE  # Prevent inheriting error bars
+    )
+
+  # Lower panel plot (factor combinations)
   lower_plot <- plotly::plot_ly(
     data = lower_data,
     x = ~rank,
@@ -108,9 +123,19 @@ mfcurve_plotting <- function(stats, factors, outcome, alpha = 0.05, showTitle = 
 
   # Add title if showTitle is TRUE
   if (showTitle) {
-    title <- paste("Mean", outcome, "by combination of", paste(factors, collapse = " / "))
+    title <- paste("Mean", outcome, "by the combination of", paste(factors, collapse = " / "))
     combined_plot <- combined_plot %>%
-      plotly::layout(title = list(text = title, x = 0.5))
+      plotly::layout(
+        title = list(text = title, x = 0.5),
+        yaxis = list(title = outcome),
+        yaxis2 = list(title = "Factors")
+      )
+  } else {
+    combined_plot <- combined_plot %>%
+      plotly::layout(
+        yaxis = list(title = outcome),
+        yaxis2 = list(title = "Factors")
+      )
   }
 
   return(combined_plot)

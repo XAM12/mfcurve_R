@@ -1,9 +1,7 @@
 
-#source("path/to/mfcurve_preprocessing.R")
-#source("path/to/mfcurve_stat_testing.R")
-#source("path/to/mfcurve_plotting.R")
-
-# CALL FUNCTIONS!!
+source("R/preprocessing.R")
+source("R/stat_testing.R")
+source("R/plotting.R")
 
 # Simulated dataset
 set.seed(123)
