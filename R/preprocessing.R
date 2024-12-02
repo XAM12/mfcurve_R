@@ -1,17 +1,17 @@
 #' Preprocess Data for Multi-Factor Curve Analysis
 #'
-#' This function preprocesses data by filtering missing values, creating group variables,
-#' calculating summary statistics, and ranking groups. It replicates the preprocessing logic
-#' used by Max and the Stata 'mfcurve' ado file.
+#' Prepares the dataset for analysis by filtering missing values, creating group variables,
+#' calculating summary statistics, and ranking groups. This replicates preprocessing logic
+#' used in the original 'mfcurve' implementation.
 #'
 #' @param data A data frame containing the dataset to be preprocessed.
 #' @param outcome_var A character string specifying the name of the outcome variable (e.g., "wage").
-#' @param factors A character vector of factor variable names to group by (e.g., c("factor_1", "factor_2")).
+#' @param factors A character vector specifying the factor variables to group by (e.g., c("factor1", "factor2")).
 #' @param groupvar Optional. A character string specifying a predefined group variable. If NULL, groups are
 #'        created based on the combinations of the specified factors.
 #' @return A data frame summarizing the mean, standard deviation, and count for each group,
 #'         along with ranks and split factor variables.
-#' @importFrom dplyr filter mutate group_by summarize ungroup arrange across
+#' @importFrom dplyr filter mutate group_by summarize ungroup arrange across if_any all_of rename
 #' @importFrom tidyr separate
 #' @importFrom rlang sym syms
 #' @importFrom magrittr %>%
