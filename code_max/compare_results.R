@@ -3,6 +3,7 @@
 #source("path/to/mfcurve_stat_testing.R")
 #source("path/to/mfcurve_plotting.R")
 
+# CALL FUNCTIONS!!
 
 # Simulated dataset
 set.seed(123)
