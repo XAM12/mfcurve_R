@@ -107,7 +107,8 @@ mfcurve_plotting <- function(stats, factors, outcome, alpha = 0.05, showTitle = 
       yaxis = list(
         tickvals = factor_positions$y,
         ticktext = factor_positions$factor,
-        autorange = "reversed"
+        autorange = "reversed",
+        fixedrange = TRUE  # Disable dragging on the y-axis
       ),
       xaxis = list(title = "Group Rank")
     )
