@@ -11,35 +11,37 @@ mfcurve_preprocessing(data, outcome_var, factors, groupvar = NULL)
 
 \item{outcome_var}{A character string specifying the name of the outcome variable (e.g., "wage").}
 
-\item{factors}{A character vector of factor variable names to group by (e.g., c("race", "union")).}
+\item{factors}{A character vector specifying the factor variables used to define groups (e.g., \code{c("factor1", "factor2")}).}
 
-\item{groupvar}{Optional. A character string specifying a predefined group variable. If NULL, groups are
-created based on the combinations of the specified factors.}
+\item{groupvar}{Optional. A character string specifying a predefined group variable. If \code{NULL}, the group variable is created by combining the specified factors.}
 }
 \value{
-A data frame summarizing the mean, standard deviation, and count for each group.
+A data frame summarizing the following for each group:
+\itemize{
+\item \code{group}: The group identifier, combining levels of the factor variables.
+\item \code{mean_outcome}: The mean value of the outcome variable for the group.
+\item \code{sd_outcome}: The standard deviation of the outcome variable for the group.
+\item \code{n}: The number of observations in the group.
+\item \code{rank}: The rank of the group based on the mean outcome (ascending order).
+\item Factor columns: The individual factor-level combinations derived from the "group" variable.
+}
 }
 \description{
-This function preprocesses data by filtering missing values, handling factor variables,
-and creating groups for multi-factor curve analysis. It replicates the logic of the Stata
-'mfcurve' ado file, allowing for flexible grouping based on combinations of factors or a predefined group variable.
+This function prepares the dataset for multi-factor curve analysis by:
+\itemize{
+\item Filtering out rows with missing values in the specified outcome and factor variables.
+\item Creating a "group" variable based on the combinations of factor levels (if not already defined).
+\item Calculating group-level summary statistics (mean, standard deviation, and count).
+\item Ranking groups based on the mean outcome.
+\item Splitting the "group" variable back into its constituent factor-level combinations for easier interpretation.
+}
 }
 \examples{
-# Sample data creation
 data <- data.frame(
-  outcome = rnorm(100),
-  factor1 = factor(sample(letters[1:3], 100, replace = TRUE)),
-  factor2 = factor(sample(letters[4:5], 100, replace = TRUE))
+  wage = c(10, 15, 20, 12, 18, 22),
+  factor1 = c("A", "A", "B", "A", "B", "B"),
+  factor2 = c("X", "Y", "X", "X", "Y", "X"),
+  stringsAsFactors = FALSE
 )
-
-# Preprocess data with interaction of factors
-result <- mfcurve_preprocessing(data, outcome_var = "outcome", factors = c("factor1", "factor2"))
-print(result)
-
-# Add a predefined group variable
-data$groupvar <- sample(1:4, 100, replace = TRUE)
-
-# Preprocess data using the predefined group variable
-result_groupvar <- mfcurve_preprocessing(data, outcome_var = "outcome", factors = c("factor1"), groupvar = "groupvar")
-print(result_groupvar)
+mfcurve_preprocessing(data, outcome_var = "wage", factors = c("factor1", "factor2"))
 }

@@ -1,12 +1,22 @@
-#' Perform Statistical Testing for mfcurve Analysis
+#' Perform Statistical Testing for Multi-Factor Curve Analysis
 #'
-#' This function performs statistical testing on grouped data, comparing each group's mean
-#' against the overall grand mean or zero, calculates confidence intervals, and flags significant results.
+#' This function conducts statistical testing on grouped data to:
+#' - Compare each group's mean against the overall grand mean or zero.
+#' - Calculate confidence intervals for group means.
+#' - Identify statistically significant differences using hypothesis tests.
 #'
-#' @param data A data frame containing the summarized results from preprocessing, with columns for group means, standard deviations, and counts.
-#' @param test The type of test to perform: "mean" (compares each group's mean against the grand mean) or "zero" (compares each group's mean against zero).
-#' @param alpha Significance level for confidence intervals and hypothesis testing (e.g., 0.05 for 95% confidence). Default is 0.05.
-#' @return A data frame with the original data and added columns for t-values, p-values, significance flags, and confidence intervals.
+#' @param data A data frame containing the summarized group-level data, typically output from `mfcurve_preprocessing`.
+#' @param test A character string specifying the type of test to perform:
+#'   - "mean": Compares each group's mean against the grand mean.
+#'   - "zero": Compares each group's mean against zero.
+#' @param alpha A numeric value indicating the significance level for confidence intervals and hypothesis testing (e.g., 0.05 for 95% confidence). Default is 0.05.
+#' @return A data frame with the following columns added to the input data:
+#' - `t_value`: The calculated t-value for each group.
+#' - `p_value`: The two-tailed p-value for the test.
+#' - `significant`: A logical flag indicating whether the result is statistically significant (`TRUE` or `FALSE`).
+#' - `ci_lower`: The lower bound of the confidence interval for the group mean.
+#' - `ci_upper`: The upper bound of the confidence interval for the group mean.
+#'
 #' @importFrom dplyr mutate
 #' @importFrom stats pt qt
 #' @examples
@@ -33,6 +43,9 @@ mfcurve_stat_testing <- function(data, test = "mean", alpha = 0.05) {
   }
   if (!is.numeric(alpha) || alpha <= 0 || alpha >= 1) {
     stop("Invalid alpha level. Please provide a value between 0 and 1.")
+  }
+  if (anyNA(data$mean_outcome) || anyNA(data$sd_outcome) || anyNA(data$n)) {
+    stop("Input data contains missing values in required columns.")
   }
 
   # Calculate grand mean if testing against the mean

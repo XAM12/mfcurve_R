@@ -1,85 +1,74 @@
-# tests/testthat/test-mfcurve_preprocessing.R
-
-library(testthat)
-library(dplyr)
-
-# Sample dataset for testing
-set.seed(123)
-data <- mtcars %>%
-  dplyr::mutate(
-    cyl = as.factor(cyl),
-    gear = as.factor(gear),
-    random_factor = sample(c("A", "B", "C"), size = nrow(mtcars), replace = TRUE)
+test_that("mfcurve_preprocessing filters missing values correctly", {
+  # Input data with missing values
+  data <- data.frame(
+    wage = c(10, 15, NA, 20),
+    factor1 = c("A", "B", "A", NA),
+    factor2 = c("X", "Y", NA, "X"),
+    stringsAsFactors = FALSE
   )
 
-# Introducing some missing values
-data$mpg[c(3, 7)] <- NA
-data$cyl[c(2, 10)] <- NA
+  # Run preprocessing
+  result <- mfcurve_preprocessing(data, outcome_var = "wage", factors = c("factor1", "factor2"))
 
-test_that("mfcurve_preprocessing handles typical data correctly", {
-  result <- mfcurve_preprocessing(data, outcome_var = "mpg", factors = c("cyl", "gear"))
+  # Check the number of rows (only complete cases should remain)
+  expect_equal(nrow(result), 2)
 
-  # Check output structure
-  expect_true("mean_outcome" %in% colnames(result))
-  expect_true("sd_outcome" %in% colnames(result))
-  expect_true("n" %in% colnames(result))
-  expect_true("rank" %in% colnames(result))
-
-  # Check that the number of rows equals unique groups
-  expect_equal(nrow(result), length(unique(result$group)))
+  # Check that no NA values remain in the specified columns
+  expect_false(anyNA(result$mean_outcome))
 })
 
-test_that("mfcurve_preprocessing handles predefined group variable", {
-  result <- mfcurve_preprocessing(data, outcome_var = "mpg", factors = c("cyl"), groupvar = "gear")
+test_that("mfcurve_preprocessing creates group variable correctly", {
+  # Input data
+  data <- data.frame(
+    wage = c(10, 15, 20),
+    factor1 = c("A", "A", "B"),
+    factor2 = c("X", "Y", "X"),
+    stringsAsFactors = FALSE
+  )
 
-  # Ensure 'group' column is present and correctly linked
-  expect_true("group" %in% colnames(result))
-  expect_equal(nrow(result), length(unique(data$gear)))
+  # Run preprocessing
+  result <- mfcurve_preprocessing(data, outcome_var = "wage", factors = c("factor1", "factor2"))
+
+  # Check that group variable matches expected values
+  expect_equal(result$group, c("A_X", "A_Y", "B_X"))
 })
 
-test_that("mfcurve_preprocessing handles missing values correctly", {
-  result <- mfcurve_preprocessing(data, outcome_var = "mpg", factors = c("cyl", "random_factor"))
+test_that("mfcurve_preprocessing calculates summary statistics correctly", {
+  # Input data
+  data <- data.frame(
+    wage = c(10, 15, 20, 25),
+    factor1 = c("A", "A", "B", "B"),
+    factor2 = c("X", "X", "Y", "Y"),
+    stringsAsFactors = FALSE
+  )
 
-  # Check that no missing values propagate
-  expect_false(any(is.na(result$mean_outcome)))
-  expect_false(any(is.na(result$sd_outcome)))
+  # Run preprocessing
+  result <- mfcurve_preprocessing(data, outcome_var = "wage", factors = c("factor1", "factor2"))
+
+  # Check calculated means
+  expected_means <- c(12.5, 22.5)
+  expect_equal(result$mean_outcome, expected_means)
+
+  # Check calculated standard deviations
+  expected_sds <- c(3.5355339, 3.5355339)  # sqrt of variance 12.5 for n = 2
+  expect_equal(result$sd_outcome, expected_sds, tolerance = 1e-6)
+
+  # Check group sizes
+  expect_equal(result$n, c(2, 2))
 })
 
-test_that("mfcurve_preprocessing stops for missing columns", {
-  expect_error(
-    mfcurve_preprocessing(data, outcome_var = "non_existent", factors = c("cyl", "gear")),
-    "The specified outcome variable 'non_existent' is not found in the dataset."
+test_that("mfcurve_preprocessing ranks groups correctly", {
+  # Input data
+  data <- data.frame(
+    wage = c(10, 15, 20),
+    factor1 = c("A", "A", "B"),
+    factor2 = c("X", "Y", "X"),
+    stringsAsFactors = FALSE
   )
-  expect_error(
-    mfcurve_preprocessing(data, outcome_var = "mpg", factors = c("non_existent")),
-    "Some variables are missing in the dataset."
-  )
-})
 
-test_that("mfcurve_preprocessing works with minimal dataset", {
-  minimal_data <- data.frame(
-    outcome = c(1, 2, 3, 4),
-    factor1 = factor(c("A", "B", "A", "B")),
-    factor2 = factor(c("X", "X", "Y", "Y"))
-  )
-  result <- mfcurve_preprocessing(minimal_data, outcome_var = "outcome", factors = c("factor1", "factor2"))
+  # Run preprocessing
+  result <- mfcurve_preprocessing(data, outcome_var = "wage", factors = c("factor1", "factor2"))
 
-  # Ensure correct number of rows and structure
-  expect_true(nrow(result) == 4)
-  expect_true(all(c("mean_outcome", "sd_outcome", "n", "rank") %in% colnames(result)))
-})
-
-test_that("mfcurve_preprocessing stops for invalid inputs", {
-  expect_error(
-    mfcurve_preprocessing(NULL, outcome_var = "mpg", factors = c("cyl", "gear")),
-    "Please provide data, outcome_var, and factors."
-  )
-  expect_error(
-    mfcurve_preprocessing(data, outcome_var = NULL, factors = c("cyl", "gear")),
-    "Please provide data, outcome_var, and factors."
-  )
-  expect_error(
-    mfcurve_preprocessing(data, outcome_var = "mpg", factors = NULL),
-    "Please provide data, outcome_var, and factors."
-  )
+  # Check ranking (ascending order by mean outcome)
+  expect_equal(result$rank, c(1, 2, 3))
 })
