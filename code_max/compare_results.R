@@ -1,13 +1,12 @@
-# Lade die Package- und Funktionsdateien
-
 # Lade benötigte Pakete
 library(magrittr)
 library(dplyr)
 
+# Setze dein Arbeitsverzeichnis (anpassen, falls nötig)
 setwd("/Users/claudia.weileder/Desktop/mfcurve_dev/mfcurve")
 
 # Lade die Package- und Funktionsdateien
-# (Stelle sicher, dass sich diese Dateien im Verzeichnis "R/" befinden)
+# Stelle sicher, dass sich diese Dateien im Verzeichnis "R/" befinden.
 source("R/package.R")
 source("R/preprocessing.R")
 source("R/stat_testing.R")
@@ -64,15 +63,17 @@ print(head(stat_test_results))  # Zeigt die ersten Zeilen der Testergebnisse an
 #    - Das untere Panel (Faktor-Kombinationen) wird kompakt dargestellt.
 #
 # 2. plot2: Im "expanded" Modus mit fixierter oberer Y-Achse
-#    - Die Darstellung im unteren Panel ist ausführlicher (Faktor und Level kombiniert).
-#    - Das Argument upper_fixed_range = TRUE sorgt dafür, dass die Y-Achse im oberen Panel nicht scrollbar ist.
+#    - Das untere Panel zeigt eine ausführlichere Darstellung (Faktor und Level kombiniert).
+#    - Mit upper_fixed_range = TRUE wird die Y-Achse im oberen Panel fixiert.
 plot1 <- mfcurve_plotting(
   stats = stat_test_results,
   factors = c("race", "south", "union"),
   outcome = "wage",
   alpha = 0.05,
   showTitle = TRUE,
-  mode = "collapsed"  # "collapsed" = kompakte Darstellung im unteren Panel
+  mode = "collapsed",   # "collapsed": kompakte Darstellung im unteren Panel
+  upper_fixed_range = FALSE,  # obere Y-Achse bleibt scrollbar
+  color_scheme = "default"    # farbig
 )
 
 plot2 <- mfcurve_plotting(
@@ -81,8 +82,9 @@ plot2 <- mfcurve_plotting(
   outcome = "wage",
   alpha = 0.05,
   showTitle = TRUE,
-  mode = "expanded",         # "expanded" = ausführliche Darstellung im unteren Panel
-  upper_fixed_range = TRUE   # obere Y-Achse wird fixiert (keine Scroll-/Drag-Funktion)
+  mode = "expanded",         # "expanded": ausführliche Darstellung im unteren Panel
+  upper_fixed_range = TRUE,   # obere Y-Achse fixiert (keine Scroll-/Drag-Funktion)
+  color_scheme = "bw"         # schwarz-weiß Modus
 )
 
 # -----------------------------
