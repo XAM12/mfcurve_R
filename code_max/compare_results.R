@@ -1,95 +1,182 @@
-# Lade benötigte Pakete
+###############################################################################
+#                           Load Required Packages                            #
+###############################################################################
 library(magrittr)
 library(dplyr)
 
-# Setze dein Arbeitsverzeichnis (anpassen, falls nötig)
+###############################################################################
+#                           Set Working Directory                             #
+###############################################################################
+# Adjust the path as needed
 setwd("/Users/claudia.weileder/Desktop/mfcurve_dev/mfcurve")
 
-# Lade die Package- und Funktionsdateien
-# Stelle sicher, dass sich diese Dateien im Verzeichnis "R/" befinden.
+###############################################################################
+#                        Source Package & Function Files                      #
+###############################################################################
+# Ensure that the following files are located in the "R/" directory:
+# - package.R
+# - preprocessing.R
+# - stat_testing.R
+# - plotting.R
 source("R/package.R")
 source("R/preprocessing.R")
 source("R/stat_testing.R")
 source("R/plotting.R")
 
-# -----------------------------
-# Simulierter Datensatz
-# -----------------------------
-# Setze einen Seed für Reproduzierbarkeit
+###############################################################################
+#                              Minimal Example                                #
+###############################################################################
+
+## Simulated Dataset (Minimal Example)
+# Generate a dataset with 1000 observations.
+# 'wage' is normally distributed, and factors ('race', 'south', 'union') are randomly assigned.
 set.seed(123)
 n <- 1000
 df <- data.frame(
-  wage = rnorm(n, mean = 15, sd = 5),                     # Generiere Löhne (Normalverteilung)
-  race = sample(c("White", "Black", "Other"), n, replace = TRUE),  # Zufällige Zuweisung der Rassen
-  south = sample(c("Yes", "No"), n, replace = TRUE),      # Zufällige Zuweisung, ob im Süden oder nicht
-  union = sample(c("Yes", "No"), n, replace = TRUE)       # Zufällige Zuweisung, ob gewerkschaftlich organisiert
+  wage = rnorm(n, mean = 15, sd = 5),
+  race = sample(c("White", "Black", "Other"), n, replace = TRUE),
+  south = sample(c("Yes", "No"), n, replace = TRUE),
+  union = sample(c("Yes", "No"), n, replace = TRUE)
 )
 
-# -----------------------------
-# Preprocessing
-# -----------------------------
-# Die Funktion mfcurve_preprocessing:
-# - Entfernt fehlende Werte in den angegebenen Spalten.
-# - Erstellt eine Gruppenvariable, indem die Levels der Faktoren kombiniert werden.
-# - Berechnet Gruppenstatistiken (Mittelwert, Standardabweichung, Anzahl) und ordnet die Gruppen nach dem Mittelwert.
+## Minimal Data Preprocessing
+# Required parameters: data, outcome_var, and factors.
+preprocessed_data <- mfcurve_preprocessing(
+  data = df,
+  outcome_var = "wage",
+  factors = c("race", "south", "union")
+)
+# cat("Preprocessed Data:\n")
+# print(head(preprocessed_data))
+
+## Minimal Statistical Testing
+# Only the required parameter 'data' is provided.
+stat_test_results <- mfcurve_stat_testing(
+  data = preprocessed_data
+)
+# cat("\nStatistical Test Results:\n")
+# print(head(stat_test_results))
+
+## Minimal Interactive Visualization
+# Required parameters: stats, factors, and outcome.
+plot_minimal <- mfcurve_plotting(
+  stats = stat_test_results,
+  factors = c("race", "south", "union"),
+  outcome = "wage"
+)
+# Display the minimal plot
+print(plot_minimal)
+
+###############################################################################
+#                           Extended Example                                  #
+###############################################################################
+
+## Simulated Dataset (Extended Example)
+set.seed(123)
+n <- 1000
+df <- data.frame(
+  wage = rnorm(n, mean = 15, sd = 5),
+  race = sample(c("White", "Black", "Other"), n, replace = TRUE),
+  south = sample(c("Yes", "No"), n, replace = TRUE),
+  union = sample(c("Yes", "No"), n, replace = TRUE)
+)
+
+## Data Preprocessing
+# This function:
+# - Removes missing values.
+# - Creates a group identifier by combining the factor levels.
+# - Calculates group-level summary statistics and ranks the groups.
 preprocessed_data <- mfcurve_preprocessing(
   data = df,
   outcome_var = "wage",
   factors = c("race", "south", "union")
 )
 cat("Preprocessed Data:\n")
-print(head(preprocessed_data))  # Zeigt die ersten Zeilen der aufbereiteten Daten an
+print(head(preprocessed_data))
 
-# -----------------------------
-# Statistische Tests
-# -----------------------------
-# Die Funktion mfcurve_stat_testing führt einen t-Test durch, der den Gruppenmittelwert
-# entweder gegen den Grand Mean (bei test = "mean") oder gegen Null (bei test = "zero") vergleicht.
-# Hier wird "mean" verwendet, um die Gruppen gegen den Grand Mean zu testen.
+## Statistical Testing
+# This function performs a t-test for each group, comparing the group mean against the grand mean.
+# It calculates t-values, p-values, and confidence intervals.
 stat_test_results <- mfcurve_stat_testing(
   data = preprocessed_data,
-  test = "mean",   # Vergleich der Gruppenmittelwerte mit dem Grand Mean
-  alpha = 0.05     # Signifikanzniveau von 5%
+  test = "mean",   # Compare group means with the grand mean
+  alpha = 0.05     # Significance level of 5%
 )
 cat("\nStatistical Test Results:\n")
-print(head(stat_test_results))  # Zeigt die ersten Zeilen der Testergebnisse an
+print(head(stat_test_results))
 
-# -----------------------------
-# Interaktive Visualisierung
-# -----------------------------
-# Zwei Versionen des Plots werden erstellt:
-#
-# 1. plot1: Im "collapsed" Modus
-#    - Das untere Panel (Faktor-Kombinationen) wird kompakt dargestellt.
-#
-# 2. plot2: Im "expanded" Modus mit fixierter oberer Y-Achse
-#    - Das untere Panel zeigt eine ausführlichere Darstellung (Faktor und Level kombiniert).
-#    - Mit upper_fixed_range = TRUE wird die Y-Achse im oberen Panel fixiert.
+## Interactive Visualization Examples
+
+### Example Plot 1: Collapsed Mode, Default Color Scheme
+# - Lower panel shows only the factor names.
+# - Upper panel's y-axis remains scrollable.
 plot1 <- mfcurve_plotting(
   stats = stat_test_results,
   factors = c("race", "south", "union"),
   outcome = "wage",
   alpha = 0.05,
   showTitle = TRUE,
-  mode = "collapsed",   # "collapsed": kompakte Darstellung im unteren Panel
-  upper_fixed_range = FALSE,  # obere Y-Achse bleibt scrollbar
-  color_scheme = "default"    # farbig
+  mode = "collapsed",       # "collapsed": only factor names in the lower panel
+  upper_fixed_range = FALSE, # Upper panel y-axis is scrollable
+  color_scheme = "default",  # Default (colored) palette
+  plotOrigin = FALSE         # Do not force (0,0) to be included
 )
 
+### Example Plot 2: Expanded Mode, Fixed Upper Y-Axis, Black-and-White Color Scheme
+# - Lower panel displays both factor names and levels.
+# - Upper panel's y-axis is fixed (no scrolling).
 plot2 <- mfcurve_plotting(
   stats = stat_test_results,
   factors = c("race", "south", "union"),
   outcome = "wage",
   alpha = 0.05,
   showTitle = TRUE,
-  mode = "expanded",         # "expanded": ausführliche Darstellung im unteren Panel
-  upper_fixed_range = TRUE,   # obere Y-Achse fixiert (keine Scroll-/Drag-Funktion)
-  color_scheme = "bw"         # schwarz-weiß Modus
+  mode = "expanded",         # "expanded": factor names with levels (e.g., "race White")
+  upper_fixed_range = TRUE,  # Fix the y-axis in the upper panel
+  color_scheme = "bw",       # Black-and-white (grayscale) palette
+  plotOrigin = FALSE         # Do not force (0,0) to be included
 )
 
-# -----------------------------
-# Anzeige der Plots
-# -----------------------------
-# In einer interaktiven Umgebung (z.B. RStudio) werden die Plotly-Objekte angezeigt.
-print(plot1)  # Zeigt den Plot im "collapsed" Modus
-print(plot2)  # Zeigt den Plot im "expanded" Modus mit fixierter oberer Y-Achse
+### Example Plot 3: Collapsed Mode with Coordinate Origin Included
+# - Forces the x-axis to start at 0 and extends the upper panel accordingly.
+plot3 <- mfcurve_plotting(
+  stats = stat_test_results,
+  factors = c("race", "south", "union"),
+  outcome = "wage",
+  alpha = 0.05,
+  showTitle = TRUE,
+  mode = "collapsed",
+  upper_fixed_range = FALSE,
+  color_scheme = "default",
+  plotOrigin = TRUE         # Include coordinate origin (0,0) in the plot
+)
+
+### Example Plot 4: Expanded Mode with Coordinate Origin Included, Default Color Scheme
+# - Combines an expanded lower panel with (0,0) inclusion.
+plot4 <- mfcurve_plotting(
+  stats = stat_test_results,
+  factors = c("race", "south", "union"),
+  outcome = "wage",
+  alpha = 0.05,
+  showTitle = TRUE,
+  mode = "expanded",
+  upper_fixed_range = FALSE, # Upper panel remains scrollable
+  color_scheme = "default",
+  plotOrigin = TRUE          # Include coordinate origin (0,0) in the plot
+)
+
+## Display the Extended Example Plots
+print(plot1)  # Collapsed mode, default colors, scrollable y-axis.
+print(plot2)  # Expanded mode, black-and-white, fixed y-axis.
+print(plot3)  # Collapsed mode with coordinate origin included.
+print(plot4)  # Expanded mode with coordinate origin included.
+
+
+# preprocessing und stat_testing in eine Funktion
+# expanded mode hat kringel --> die sollen ausgefüllt
+# line spacing um die faktoren weiter voneinander trennen
+# bei plotOrigin true sind Achsen komisch dargestellt
+# KI anzeigen ja/nein im plotting befehl und nicht interaktiv //Max
+# Gruppengrößen mit in der hoverbox anzeigen + vllt als printoption für die, die png und nicht interaktiv//Max
+# Signifikante sachen flaggen beim testen //Max
+# signifikante sachen raute statt kreis //Max

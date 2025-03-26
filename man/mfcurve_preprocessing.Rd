@@ -4,44 +4,59 @@
 \alias{mfcurve_preprocessing}
 \title{Preprocess Data for Multi-Factor Curve Analysis}
 \usage{
-mfcurve_preprocessing(data, outcome_var, factors, groupvar = NULL)
+mfcurve_preprocessing(
+  data,
+  outcome_var,
+  factors,
+  groupvar = NULL,
+  rounding = 2,
+  plotOrigin = FALSE
+)
 }
 \arguments{
-\item{data}{A data frame containing the dataset to be preprocessed.}
+\item{data}{A data frame containing the dataset to be analyzed.}
 
-\item{outcome_var}{A character string specifying the name of the outcome variable (e.g., "wage").}
+\item{outcome_var}{A character string indicating the outcome variable (e.g., "wage").}
 
-\item{factors}{A character vector specifying the factor variables used to define groups (e.g., \code{c("factor1", "factor2")}).}
+\item{factors}{A character vector of factor variable names used to define groups (e.g., c("race", "south", "union")).}
 
-\item{groupvar}{Optional. A character string specifying a predefined group variable. If \code{NULL}, the group variable is created by combining the specified factors.}
+\item{groupvar}{Optional. A character string indicating an existing group variable. If NULL (default), a new group variable is created by concatenating the factors.}
+
+\item{rounding}{An integer specifying the number of decimal places to round computed summary statistics (default: 2).}
+
+\item{plotOrigin}{Logical. If TRUE, ensures that (0,0) is included in plots (default: FALSE).}
 }
 \value{
-A data frame summarizing the following for each group:
-\itemize{
-\item \code{group}: The group identifier, combining levels of the factor variables.
-\item \code{mean_outcome}: The mean value of the outcome variable for the group.
-\item \code{sd_outcome}: The standard deviation of the outcome variable for the group.
-\item \code{n}: The number of observations in the group.
-\item \code{rank}: The rank of the group based on the mean outcome (ascending order).
-\item Factor columns: The individual factor-level combinations derived from the "group" variable.
-}
+A data frame containing the following columns:
+\item{group}{A character vector that uniquely identifies each group (combination of factor levels).}
+\item{mean_outcome}{The mean of the outcome variable for each group.}
+\item{sd_outcome}{The standard deviation of the outcome variable for each group.}
+\item{n}{The number of observations in each group.}
+\item{rank}{The rank of each group based on the mean outcome (sorted in ascending order).}
+\item{\if{html}{\out{<factor variables>}}}{Each input factor as a separate column, extracted from the concatenated group identifier.}
 }
 \description{
-This function prepares the dataset for multi-factor curve analysis by:
-\itemize{
-\item Filtering out rows with missing values in the specified outcome and factor variables.
-\item Creating a "group" variable based on the combinations of factor levels (if not already defined).
-\item Calculating group-level summary statistics (mean, standard deviation, and count).
-\item Ranking groups based on the mean outcome.
-\item Splitting the "group" variable back into its constituent factor-level combinations for easier interpretation.
+This function prepares the input dataset for a multi-factor curve analysis. It performs the following steps:
+\enumerate{
+\item Removes rows with missing values in the specified outcome variable and factor variables.
+\item Creates a "group" variable by concatenating the specified factor variables (if a group variable is not already provided).
+\item Calculates group-level summary statistics including the mean outcome, standard deviation, and number of observations.
+\item Ranks the groups in ascending order based on the mean outcome.
+\item Rounds numerical summary values to a specified number of decimal places for better visualization.
+\item Optionally ensures that the coordinate origin (0,0) is included in subsequent plots.
 }
 }
 \examples{
-data <- data.frame(
-  wage = c(10, 15, 20, 12, 18, 22),
-  factor1 = c("A", "A", "B", "A", "B", "B"),
-  factor2 = c("X", "Y", "X", "X", "Y", "X"),
-  stringsAsFactors = FALSE
+\dontrun{
+set.seed(123)
+df <- data.frame(
+  wage = rnorm(1000, mean = 15, sd = 5),
+  race = sample(c("White", "Black", "Other"), 1000, replace = TRUE),
+  south = sample(c("Yes", "No"), 1000, replace = TRUE),
+  union = sample(c("Yes", "No"), 1000, replace = TRUE)
 )
-mfcurve_preprocessing(data, outcome_var = "wage", factors = c("factor1", "factor2"))
+preprocessed_data <- mfcurve_preprocessing(df, outcome_var = "wage",
+                                           factors = c("race", "south", "union"))
+}
+
 }

@@ -4,51 +4,46 @@
 \alias{mfcurve_stat_testing}
 \title{Perform Statistical Testing for Multi-Factor Curve Analysis}
 \usage{
-mfcurve_stat_testing(data, test = "mean", alpha = 0.05)
+mfcurve_stat_testing(data, test = "mean", alpha = 0.05, rounding = 2)
 }
 \arguments{
-\item{data}{A data frame containing the summarized group-level data, typically output from \code{mfcurve_preprocessing}.}
+\item{data}{A data frame containing the summarized group-level data.}
 
-\item{test}{A character string specifying the type of test to perform:
+\item{test}{A character string specifying the test type:
 \itemize{
 \item "mean": Compares each group's mean against the grand mean.
 \item "zero": Compares each group's mean against zero.
+Default is "mean".
 }}
 
-\item{alpha}{A numeric value indicating the significance level for confidence intervals and hypothesis testing (e.g., 0.05 for 95\% confidence). Default is 0.05.}
+\item{alpha}{A numeric value indicating the significance level (e.g., 0.05 for a 95\% confidence interval). Default is 0.05.}
+
+\item{rounding}{An integer specifying the number of decimal places to round the output statistics (default: 2).}
 }
 \value{
-A data frame with the following columns added to the input data:
-\itemize{
-\item \code{t_value}: The calculated t-value for each group.
-\item \code{p_value}: The two-tailed p-value for the test.
-\item \code{significant}: A logical flag indicating whether the result is statistically significant (\code{TRUE} or \code{FALSE}).
-\item \code{ci_lower}: The lower bound of the confidence interval for the group mean.
-\item \code{ci_upper}: The upper bound of the confidence interval for the group mean.
-}
+A data frame with additional columns:
+\item{t_value}{The computed t-statistic for each group.}
+\item{p_value}{The two-tailed p-value corresponding to the t-statistic.}
+\item{significant}{A logical value indicating whether the test result is statistically significant (TRUE if p < alpha, else FALSE).}
+\item{ci_lower}{The lower bound of the confidence interval for the group mean.}
+\item{ci_upper}{The upper bound of the confidence interval for the group mean.}
 }
 \description{
-This function conducts statistical testing on grouped data to:
+This function conducts statistical tests on group-level data (typically the output from mfcurve_preprocessing).
+It compares each group's mean outcome either against the overall grand mean or against zero, and computes:
 \itemize{
-\item Compare each group's mean against the overall grand mean or zero.
-\item Calculate confidence intervals for group means.
-\item Identify statistically significant differences using hypothesis tests.
+\item The t-statistic.
+\item The two-tailed p-value.
+\item A flag indicating statistical significance based on the specified alpha level.
+\item Confidence intervals (lower and upper bounds) for the group means.
+In addition, the function rounds numerical results to a specified number of decimal places for improved readability.
 }
 }
 \examples{
-# Example data
-data <- data.frame(
-  group = c("A", "B", "C"),
-  mean_outcome = c(15, 18, 22),
-  sd_outcome = c(5, 6, 4),
-  n = c(20, 25, 30)
-)
+\dontrun{
+preprocessed_data <- mfcurve_preprocessing(df, outcome_var = "wage",
+                                           factors = c("race", "south", "union"))
+test_results <- mfcurve_stat_testing(preprocessed_data, test = "mean", alpha = 0.05)
+}
 
-# Test each group against the grand mean
-test_result <- mfcurve_stat_testing(data, test = "mean", alpha = 0.05)
-print(test_result)
-
-# Test each group against zero
-test_result_zero <- mfcurve_stat_testing(data, test = "zero", alpha = 0.05)
-print(test_result_zero)
 }

@@ -2,24 +2,75 @@
 % Please edit documentation in R/plotting.R
 \name{mfcurve_plotting}
 \alias{mfcurve_plotting}
-\title{Create an Interactive Plot for Multi-Factor Curve Analysis}
+\title{Create an Interactive Plot for mfcurve Analysis (with Two Panels)}
 \usage{
-mfcurve_plotting(stats, factors, outcome, alpha = 0.05, showTitle = TRUE)
+mfcurve_plotting(
+  stats,
+  factors,
+  outcome,
+  alpha = 0.05,
+  rounding = 2,
+  plotOrigin = FALSE,
+  showTitle = TRUE,
+  mode = "collapsed",
+  upper_fixed_range = FALSE,
+  color_scheme = "default"
+)
 }
 \arguments{
-\item{stats}{A data frame containing the summarized group statistics and ranks.}
+\item{stats}{A data frame containing the summarized group statistics (e.g., output from mfcurve_stat_testing).}
 
 \item{factors}{A character vector specifying the factor variables used in the analysis.}
 
-\item{outcome}{A character string specifying the outcome variable for the analysis.}
+\item{outcome}{A string specifying the outcome variable (e.g., "wage").}
 
-\item{alpha}{A numeric value indicating the significance level for confidence intervals.}
+\item{alpha}{A numeric value for the significance level (default: 0.05).}
 
-\item{showTitle}{Logical; whether to display a title on the plot.}
+\item{rounding}{An integer specifying the number of decimal places for rounding numeric values (default: 2).}
+
+\item{plotOrigin}{Logical. If TRUE, includes the coordinate origin (0,0) in the plot (default: FALSE).}
+
+\item{showTitle}{Logical. If TRUE, displays a title on the plot (default: TRUE).}
+
+\item{mode}{Character; controls the display of the lower panel ("collapsed" or "expanded") (default: "collapsed").}
+
+\item{upper_fixed_range}{Logical. If TRUE, fixes the y-axis of the upper panel (default: FALSE).}
+
+\item{color_scheme}{Character; determines the color scheme ("default" for color, "bw" for black-and-white) (default: "default").}
 }
 \value{
-A \code{plotly} object containing the plot.
+A Plotly object containing the combined interactive plot.
 }
 \description{
-This function generates an interactive plot for multi-factor curve analysis.
+This function generates an interactive Plotly plot that combines two panels:
+\itemize{
+\item The upper panel displays group means with error bars (confidence intervals).
+\item The lower panel visualizes the factor-level combinations mapped to group ranks.
+}
+}
+\details{
+The function offers the following customizations:
+\itemize{
+\item \code{mode}: "collapsed" (shows only factor names) or "expanded" (appends factor levels to the names).
+\item \code{upper_fixed_range}: If TRUE, the y-axis of the upper panel is fixed (no scroll/drag).
+\item \code{color_scheme}: "default" for a colored palette, "bw" for grayscale.
+\item \code{plotOrigin}: If TRUE, the coordinate origin (0,0) is included in the plot.
+\item \code{rounding}: Number of decimal places for rounding numeric values.
+}
+}
+\examples{
+\dontrun{
+preprocessed_data <- mfcurve_preprocessing(df, outcome_var = "wage",
+                                           factors = c("race", "south", "union"))
+test_results <- mfcurve_stat_testing(preprocessed_data, test = "mean", alpha = 0.05)
+plot1 <- mfcurve_plotting(test_results, factors = c("race", "south", "union"),
+                          outcome = "wage", alpha = 0.05, showTitle = TRUE,
+                          mode = "collapsed", upper_fixed_range = FALSE,
+                          color_scheme = "default")
+plot2 <- mfcurve_plotting(test_results, factors = c("race", "south", "union"),
+                          outcome = "wage", alpha = 0.05, showTitle = TRUE,
+                          mode = "expanded", upper_fixed_range = TRUE,
+                          color_scheme = "bw")
+}
+
 }
