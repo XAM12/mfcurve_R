@@ -1,74 +1,148 @@
-test_that("mfcurve_preprocessing filters missing values correctly", {
-  # Input data with missing values
-  data <- data.frame(
-    wage = c(10, 15, NA, 20),
-    factor1 = c("A", "B", "A", NA),
-    factor2 = c("X", "Y", NA, "X"),
-    stringsAsFactors = FALSE
+library(testthat)
+library(dplyr)
+library(tidyr)
+
+# Assume that mfcurve_preprocessing is already loaded (e.g. via your package or sourced file)
+
+context("mfcurve_preprocessing tests")
+
+# Test that an invalid rounding value triggers an error
+test_that("Error when rounding is not a non-negative whole number", {
+  dummy_data <- data.frame(wage = 1, race = "A", south = "B", union = "C")
+
+  expect_error(
+    mfcurve_preprocessing(data = dummy_data,
+                          outcome = "wage",
+                          factors = c("race", "south", "union"),
+                          rounding = -1),
+    "The 'rounding' parameter must be a non-negative whole number."
   )
 
-  # Run preprocessing
-  result <- mfcurve_preprocessing(data, outcome_var = "wage", factors = c("factor1", "factor2"))
-
-  # Check the number of rows (only complete cases should remain)
-  expect_equal(nrow(result), 2)
-
-  # Check that no NA values remain in the specified columns
-  expect_false(anyNA(result$mean_outcome))
+  expect_error(
+    mfcurve_preprocessing(data = dummy_data,
+                          outcome = "wage",
+                          factors = c("race", "south", "union"),
+                          rounding = 2.5),
+    "The 'rounding' parameter must be a non-negative whole number."
+  )
 })
 
-test_that("mfcurve_preprocessing creates group variable correctly", {
-  # Input data
-  data <- data.frame(
-    wage = c(10, 15, 20),
-    factor1 = c("A", "A", "B"),
-    factor2 = c("X", "Y", "X"),
-    stringsAsFactors = FALSE
+# Test that an invalid 'test' parameter triggers an error
+test_that("Error when test parameter is invalid", {
+  dummy_data <- data.frame(wage = 1, race = "A", south = "B", union = "C")
+
+  expect_error(
+    mfcurve_preprocessing(data = dummy_data,
+                          outcome = "wage",
+                          factors = c("race", "south", "union"),
+                          test = "invalid"),
+    "Invalid value for 'test'. Please use 'mean' or 'zero'."
   )
-
-  # Run preprocessing
-  result <- mfcurve_preprocessing(data, outcome_var = "wage", factors = c("factor1", "factor2"))
-
-  # Check that group variable matches expected values
-  expect_equal(result$group, c("A_X", "A_Y", "B_X"))
 })
 
-test_that("mfcurve_preprocessing calculates summary statistics correctly", {
-  # Input data
-  data <- data.frame(
-    wage = c(10, 15, 20, 25),
-    factor1 = c("A", "A", "B", "B"),
-    factor2 = c("X", "X", "Y", "Y"),
-    stringsAsFactors = FALSE
+# Test basic functionality with test = "mean"
+test_that("Correct preprocessing with test = 'mean'", {
+  df <- data.frame(
+    wage = c(10, 20, 30, 40, NA),
+    race = c("White", "Black", "White", "Black", "White"),
+    south = c("Yes", "No", "Yes", "No", "Yes"),
+    union = c("No", "Yes", "No", "Yes", "No")
   )
 
-  # Run preprocessing
-  result <- mfcurve_preprocessing(data, outcome_var = "wage", factors = c("factor1", "factor2"))
+  result <- mfcurve_preprocessing(data = df,
+                                  outcome = "wage",
+                                  factors = c("race", "south", "union"),
+                                  test = "mean",
+                                  rounding = 2,
+                                  mode = "collapsed",
+                                  plotOrigin = TRUE)
 
-  # Check calculated means
-  expected_means <- c(12.5, 22.5)
-  expect_equal(result$mean_outcome, expected_means)
+  # Check that grand_mean is computed correctly (NA omitted)
+  expect_equal(result$grand_mean, mean(c(10, 20, 30, 40)))
 
-  # Check calculated standard deviations
-  expected_sds <- c(3.5355339, 3.5355339)  # sqrt of variance 12.5 for n = 2
-  expect_equal(result$sd_outcome, expected_sds, tolerance = 1e-6)
+  # Check that group_stats is a data frame with expected columns
+  expected_cols <- c("race", "south", "union", "mean_outcome", "sd_outcome", "n",
+                     "t_stat", "p_value", "sig", "rank", "se", "ci_lower", "ci_upper", "ci_width")
+  expect_true(all(expected_cols %in% names(result$group_stats)))
 
-  # Check group sizes
-  expect_equal(result$n, c(2, 2))
+  # With one row removed due to NA, we expect two unique groups
+  expect_equal(nrow(result$group_stats), 2)
+
+  # Check that group_stats_vis contains rounded columns
+  expect_true("mean_outcome_vis" %in% names(result$group_stats_vis))
+
+  # Check that lower_data has the correct structure
+  expect_true(all(c("rank", "factor", "level", "level_code", "y") %in% names(result$lower_data)))
+
+  # Check that axis_limits is a list with expected elements
+  expect_true(is.list(result$axis_limits))
+  expect_true(all(c("x_min", "x_max", "y_min", "y_max") %in% names(result$axis_limits)))
+
+  # Check that factor_positions is a data frame with columns "factor" and "y"
+  expect_true(is.data.frame(result$factor_positions))
+  expect_true(all(c("factor", "y") %in% names(result$factor_positions)))
 })
 
-test_that("mfcurve_preprocessing ranks groups correctly", {
-  # Input data
-  data <- data.frame(
-    wage = c(10, 15, 20),
-    factor1 = c("A", "A", "B"),
-    factor2 = c("X", "Y", "X"),
-    stringsAsFactors = FALSE
+# Test functionality when test = "zero"
+test_that("Preprocessing with test = 'zero' uses zero as reference", {
+  df <- data.frame(
+    wage = c(10, 20, 30, 40),
+    race = c("White", "Black", "White", "Black"),
+    south = c("Yes", "No", "Yes", "No"),
+    union = c("No", "Yes", "No", "Yes")
   )
 
-  # Run preprocessing
-  result <- mfcurve_preprocessing(data, outcome_var = "wage", factors = c("factor1", "factor2"))
+  result <- mfcurve_preprocessing(data = df,
+                                  outcome = "wage",
+                                  factors = c("race", "south", "union"),
+                                  test = "zero",
+                                  rounding = 2,
+                                  mode = "collapsed",
+                                  plotOrigin = FALSE)
 
-  # Check ranking (ascending order by mean outcome)
-  expect_equal(result$rank, c(1, 2, 3))
+  # For each group, since reference = 0, the t-statistic should be positive.
+  expect_true(all(result$group_stats$t_stat > 0))
+})
+
+# Test functionality for mode = "expanded"
+test_that("Preprocessing with mode = 'expanded' correctly expands factor labels", {
+  df <- data.frame(
+    wage = c(10, 20, 30, 40),
+    race = c("White", "Black", "White", "Black"),
+    south = c("Yes", "No", "Yes", "No"),
+    union = c("No", "Yes", "No", "Yes")
+  )
+
+  result <- mfcurve_preprocessing(data = df,
+                                  outcome = "wage",
+                                  factors = c("race", "south", "union"),
+                                  test = "mean",
+                                  rounding = 2,
+                                  mode = "expanded",
+                                  plotOrigin = FALSE)
+
+  # In lower_data, the factor column should contain expanded labels (e.g., "race White")
+  expect_true(any(grepl(" ", result$lower_data$factor)))
+})
+
+# Test that the rounded values in group_stats_vis are correctly rounded
+test_that("Rounded values in group_stats_vis match expected rounding", {
+  df <- data.frame(
+    wage = c(10, 20, 30, 40),
+    race = c("White", "Black", "White", "Black"),
+    south = c("Yes", "No", "Yes", "No"),
+    union = c("No", "Yes", "No", "Yes")
+  )
+
+  result <- mfcurve_preprocessing(data = df,
+                                  outcome = "wage",
+                                  factors = c("race", "south", "union"),
+                                  test = "mean",
+                                  rounding = 1,
+                                  mode = "collapsed",
+                                  plotOrigin = FALSE)
+
+  # Compare the rounded column with the manually rounded original values
+  expect_equal(result$group_stats_vis$mean_outcome_vis,
+               round(result$group_stats_vis$mean_outcome, 1))
 })

@@ -2,7 +2,6 @@
 
 export(mfcurve_plotting)
 export(mfcurve_preprocessing)
-export(mfcurve_stat_testing)
 import(dplyr)
 import(magrittr)
 import(plotly)
