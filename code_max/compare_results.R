@@ -122,9 +122,15 @@ print(plot2)  # Expanded mode, default axis limits.
 print(plot3)  # Collapsed mode with (0,0) included in axes.
 print(plot4)  # Expanded mode with (0,0) included in axes.
 
-
-# preprocessing und stat_testing in eine Funktion
-# expanded mode hat kringel --> die sollen ausgefüllt
+# Expanded Mode der Grafik mit jeweils eigenen Farben für jeden Faktor
+# (anstatt aktuell alle Faktoren erhalten dieselbe Farbe) Collapsed Mode der
+# Grafik, jeweils unterschiedliche Farben für unterschiedliche Faktorstufen,
+# keine doppelte Vergabe der gleichen Farben Schwarz-Weiß Modus für die
+# Grafik, analog zur Stata Grafik Halber und voller Kreis für Faktorstufe
+# liegt nicht vor/ vor anstatt aktuell keine Kennzeichnung vs. voller Kreis
+# mit verschiedenen Farben oberes Panel fixieren
+# done. preprocessing und stat_testing in eine Funktion
+# done. expanded mode hat kringel --> die sollen ausgefüllt
 # line spacing um die faktoren weiter voneinander trennen
 # bei plotOrigin true sind Achsen komisch dargestellt
 # KI anzeigen ja/nein im plotting befehl und nicht interaktiv //Max
