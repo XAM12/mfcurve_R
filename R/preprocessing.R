@@ -7,6 +7,7 @@
 #' @param outcome A string indicating the name of the outcome variable (numeric).
 #' @param factors A character vector of factor variable names to define groups.
 #' @param alpha Significance level for the t-tests and confidence intervals. Default is 0.05.
+#' @param test A string indicating the reference value for t-tests: "mean" (group mean vs. grand mean) or "zero" (group mean vs. 0).
 #'
 #' @return A list with:
 #' \describe{
@@ -17,10 +18,13 @@
 #'   \item{level}{The confidence level used.}
 #' }
 #' @export
-mfcurve_preprocessing <- function(data, outcome, factors, alpha = 0.05) {
+mfcurve_preprocessing <- function(data, outcome, factors, alpha = 0.05, test = "mean") {
   # Input validation
   if (!is.numeric(data[[outcome]])) {
     stop("The outcome variable must be numeric.")
+  }
+  if (!test %in% c("mean", "zero")) {
+    stop('Argument "test" must be either "mean" or "zero".')
   }
 
   # Remove missing values
@@ -43,7 +47,8 @@ mfcurve_preprocessing <- function(data, outcome, factors, alpha = 0.05) {
       .groups = "drop"
     ) |>
     dplyr::mutate(
-      t_stat = (mean_outcome - grand_mean) / (sd_outcome / sqrt(n)),
+      test_value = if (test == "mean") grand_mean else 0,
+      t_stat = (mean_outcome - test_value) / (sd_outcome / sqrt(n)),
       p_value = 2 * stats::pt(-abs(t_stat), df = n - 1),
       sig = p_value < alpha
     ) |>

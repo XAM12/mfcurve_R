@@ -67,7 +67,7 @@ plottest_collapsed <- mfcurve_plotting(
 ###############################################################################
 #                       TEST CASE 3: Mode = 'expanded'                        #
 ###############################################################################
-prep3 <- mfcurve_preprocessing(df, outcome = outcome_var, factors = factor_vars)
+prep3 <- mfcurve_preprocessing(df, outcome = outcome_var, test = "zero", factors = factor_vars)
 plottest_expanded <- mfcurve_plotting(
   group_stats_vis = prep3$group_stats_vis,
   lower_data = prep3$lower_data,
