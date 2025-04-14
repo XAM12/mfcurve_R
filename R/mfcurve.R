@@ -6,7 +6,7 @@
 #' @param data A data frame containing the variables.
 #' @param outcome A string indicating the name of the outcome variable (numeric).
 #' @param factors A character vector of factor variable names to define groups.
-#' @param test A placeholder argument for future testing types (currently unused).
+#' @param test A string indicating the reference value for t-tests: "mean" or "zero". Passed to preprocessing.
 #' @param alpha Significance level for t-tests and confidence intervals. Default is 0.05.
 #' @param showTitle Logical. Should the title be shown in the plot? Default is TRUE.
 #' @param SaveProcessedData Logical. If TRUE, saves \code{group_stats} to the global environment. Default is FALSE.
@@ -15,18 +15,26 @@
 #' @param plotOrigin Logical. If TRUE, axes will include origin (0). Default is FALSE.
 #' @param CI Logical. Whether to display confidence intervals. Default is TRUE.
 #'
-#' @return Invisibly returns the plotly object.
+#' @return Invisibly returns the plotly object representing the two-panel plot.
+#' If \code{SaveProcessedData = TRUE}, the group-level statistics are assigned to the global environment.
 #' @export
 mfcurve <- function(data, outcome, factors, test = "mean", alpha = 0.05, showTitle = TRUE,
                     SaveProcessedData = FALSE, mode = "collapsed", rounding = 2,
                     plotOrigin = FALSE, CI = TRUE) {
 
-  # Run preprocessing
-  results <- mfcurve_preprocessing(data = data, outcome = outcome, factors = factors, alpha = alpha)
+  # Run preprocessing (pass test argument)
+  results <- mfcurve_preprocessing(
+    data = data,
+    outcome = outcome,
+    factors = factors,
+    alpha = alpha,
+    test = test
+  )
 
   # Optionally save to global environment
   if (SaveProcessedData) {
     assign("group_stats", results$group_stats, envir = .GlobalEnv)
+    message("Saved 'group_stats' to the global environment.")
   }
 
   # Plot
