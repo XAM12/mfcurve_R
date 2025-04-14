@@ -89,7 +89,8 @@ plottest_no_CI <- mfcurve_plotting(
   outcome = outcome_var,
   factors = factor_vars,
   level = prep4$level,
-  CI = FALSE
+  CI = FALSE,
+  plotOrigin = TRUE
 )
 
 ###############################################################################

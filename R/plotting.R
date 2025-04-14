@@ -56,11 +56,17 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
     lower_data$factor <- lower_data$factor_lbl
     lower_data <- dplyr::select(lower_data, -factor_var, -factor_lbl)
   } else {
+    # collapsed mode
     factor_levels <- unique(lower_data$factor)
     factor_positions <- data.frame(
       factor = factor_levels,
       y = seq(length(factor_levels), 1)
     )
+
+    # Jedes unique factor + level bekommt eigene Farbe
+    lower_data <- lower_data %>%
+      dplyr::mutate(factor_level_combo = paste(factor, level, sep = ":")) %>%
+      dplyr::mutate(level_code = as.numeric(factor(factor_level_combo)))
   }
 
   lower_data <- dplyr::left_join(lower_data, factor_positions, by = "factor")
