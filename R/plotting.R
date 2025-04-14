@@ -55,6 +55,12 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
     )
     lower_data$factor <- lower_data$factor_lbl
     lower_data <- dplyr::select(lower_data, -factor_var, -factor_lbl)
+
+    # Assign same color per factor_var (e.g., union) in expanded mode
+    lower_data <- lower_data %>%
+      dplyr::mutate(factor_group = sub("^(.*?) .*", "\\1", factor)) %>%
+      dplyr::mutate(level_code = as.numeric(factor(factor_group)))
+
   } else {
     # collapsed mode
     factor_levels <- unique(lower_data$factor)
