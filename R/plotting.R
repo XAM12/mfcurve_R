@@ -23,33 +23,48 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
                              plotOrigin = FALSE, CI = TRUE,
                              mode = "collapsed") {
 
-  # Expand factor labels if mode is "expanded"
   if (mode == "expanded") {
     lower_data <- lower_data %>%
       dplyr::mutate(factor = paste(factor, level, sep = " ")) %>%
       dplyr::mutate(
-        factor_var = sub("^(.*?) .*", "\\1", factor),  # extract original variable name
+        factor_var = sub("^(.*?) .*", "\\1", factor),
         factor_lbl = factor
       ) %>%
       dplyr::group_by(factor_var) %>%
       dplyr::arrange(factor_var, factor_lbl, .by_group = TRUE) %>%
       dplyr::ungroup()
 
-    factor_levels <- unique(lower_data$factor_lbl)
+    # Add spacing between blocks for expanded mode
+    factor_blocks <- split(lower_data, lower_data$factor_var)
+    y_pos <- c()
+    factor_order <- c()
+    spacing <- 0.6
+
+    current_y <- 0
+    for (block in factor_blocks) {
+      n_levels <- length(unique(block$factor_lbl))
+      block_y <- current_y + seq(n_levels, 1)
+      y_pos <- c(y_pos, block_y)
+      factor_order <- c(factor_order, unique(block$factor_lbl))
+      current_y <- max(block_y) + spacing
+    }
+
+    factor_positions <- data.frame(
+      factor = factor_order,
+      y = y_pos
+    )
     lower_data$factor <- lower_data$factor_lbl
     lower_data <- dplyr::select(lower_data, -factor_var, -factor_lbl)
   } else {
     factor_levels <- unique(lower_data$factor)
+    factor_positions <- data.frame(
+      factor = factor_levels,
+      y = seq(length(factor_levels), 1)
+    )
   }
 
-  # Assign positions to factors AFTER adjusting names
-  factor_positions <- data.frame(
-    factor = factor_levels,
-    y = seq(length(factor_levels), 1)
-  )
   lower_data <- dplyr::left_join(lower_data, factor_positions, by = "factor")
 
-  # Round values for visual representation
   group_stats_vis <- dplyr::mutate(group_stats_vis,
                                    mean_outcome_vis = round(mean_outcome, rounding),
                                    sd_outcome_vis = round(sd_outcome, rounding),
@@ -57,22 +72,19 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
                                    ci_upper_vis = round(ci_upper, rounding),
                                    ci_width_vis = round(ci_width, rounding))
 
-  # Axis limits (fixed)
-  x_min <- min(group_stats_vis$rank)
+  x_min <- min(group_stats_vis$rank) - 0.5
   x_max <- max(group_stats_vis$rank) + 0.5
   y_min <- min(group_stats_vis$ci_lower_vis)
   y_max <- max(group_stats_vis$ci_upper_vis)
 
-  # Add offset for significance stars
   offset <- 0.08 * (y_max - y_min)
-  y_max <- y_max + offset + 0.05 * (y_max - y_min)  # add space so stars aren't cut off
+  y_max <- y_max + offset + 0.05 * (y_max - y_min)
 
   if (plotOrigin) {
     x_min <- min(x_min, 0)
     y_min <- min(y_min, 0)
   }
 
-  # Upper plot
   upper_plot <- plotly::plot_ly(data = group_stats_vis)
 
   if (CI) {
@@ -141,7 +153,6 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
       yaxis = list(range = c(y_min, y_max), fixedrange = TRUE)
     )
 
-  # Lower plot
   lower_plot <- plotly::plot_ly(
     data = lower_data,
     x = ~rank,
@@ -167,7 +178,6 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
       )
     )
 
-  # Combine upper and lower panels
   title <- paste("Mean", outcome, "by the combination of", paste(factors, collapse = " / "))
   combined <- plotly::subplot(upper_plot, lower_plot, nrows = 2, shareX = TRUE, heights = c(0.7, 0.3))
 
