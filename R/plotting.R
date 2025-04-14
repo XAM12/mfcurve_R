@@ -26,11 +26,23 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
   # Expand factor labels if mode is "expanded"
   if (mode == "expanded") {
     lower_data <- lower_data %>%
-      dplyr::mutate(factor = paste(factor, level, sep = " "))
+      dplyr::mutate(factor = paste(factor, level, sep = " ")) %>%
+      dplyr::mutate(
+        factor_var = sub("^(.*?) .*", "\\1", factor),  # extract original variable name
+        factor_lbl = factor
+      ) %>%
+      dplyr::group_by(factor_var) %>%
+      dplyr::arrange(factor_var, factor_lbl, .by_group = TRUE) %>%
+      dplyr::ungroup()
+
+    factor_levels <- unique(lower_data$factor_lbl)
+    lower_data$factor <- lower_data$factor_lbl
+    lower_data <- dplyr::select(lower_data, -factor_var, -factor_lbl)
+  } else {
+    factor_levels <- unique(lower_data$factor)
   }
 
   # Assign positions to factors AFTER adjusting names
-  factor_levels <- unique(lower_data$factor)
   factor_positions <- data.frame(
     factor = factor_levels,
     y = seq(length(factor_levels), 1)
@@ -45,11 +57,16 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
                                    ci_upper_vis = round(ci_upper, rounding),
                                    ci_width_vis = round(ci_width, rounding))
 
-  # Axis limits
+  # Axis limits (fixed)
   x_min <- min(group_stats_vis$rank)
   x_max <- max(group_stats_vis$rank) + 0.5
   y_min <- min(group_stats_vis$ci_lower_vis)
   y_max <- max(group_stats_vis$ci_upper_vis)
+
+  # Add offset for significance stars
+  offset <- 0.08 * (y_max - y_min)
+  y_max <- y_max + offset + 0.05 * (y_max - y_min)  # add space so stars aren't cut off
+
   if (plotOrigin) {
     x_min <- min(x_min, 0)
     y_min <- min(y_min, 0)
@@ -99,7 +116,6 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
       )
   }
 
-  offset <- 0.08 * (y_max - y_min)
   upper_plot <- upper_plot %>%
     plotly::add_trace(
       data = dplyr::filter(group_stats_vis, sig),
@@ -121,8 +137,8 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
       name = 'Grand Mean'
     ) %>%
     plotly::layout(
-      xaxis = list(range = c(x_min, x_max)),
-      yaxis = list(range = c(y_min, y_max))
+      xaxis = list(range = c(x_min, x_max), fixedrange = TRUE),
+      yaxis = list(range = c(y_min, y_max), fixedrange = TRUE)
     )
 
   # Lower plot
@@ -141,9 +157,14 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
       yaxis = list(
         tickvals = factor_positions$y,
         ticktext = factor_positions$factor,
-        autorange = "reversed"
+        autorange = "reversed",
+        fixedrange = TRUE
       ),
-      xaxis = list(title = "Group Rank")
+      xaxis = list(
+        title = "Group Rank",
+        range = c(x_min, x_max),
+        fixedrange = TRUE
+      )
     )
 
   # Combine upper and lower panels
