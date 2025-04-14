@@ -1,73 +1,131 @@
-#' Plot MF Curve Analysis Results
+#' Plot Group Differences with Confidence Intervals
 #'
-#' This function creates an interactive Plotly visualization of MF curve analysis results
-#' produced by \code{mfcurve_preprocessing}. It constructs an upper panel showing group means
-#' with confidence intervals and a lower panel displaying factor level labels.
+#' Creates a two-panel interactive plot showing group means (with confidence intervals)
+#' and the corresponding factor combinations.
 #'
-#' @param processed_data A list returned by \code{mfcurve_preprocessing}.
-#' @param outcome A character string specifying the name of the outcome variable (used for y-axis labeling).
-#' @param showTitle A logical value indicating whether to display a title on the combined plot (default is TRUE).
+#' @param group_stats_vis Data frame with visual group statistics (from preprocessing).
+#' @param lower_data Data for the lower panel (from preprocessing).
+#' @param grand_mean The grand mean of the outcome variable.
+#' @param outcome The name of the outcome variable (string).
+#' @param factors Character vector of factor variable names.
+#' @param level Confidence level (e.g., 0.95).
+#' @param rounding Rounding digits for the plot (default: 2).
+#' @param showTitle Logical, whether to show the plot title (default: TRUE).
+#' @param plotOrigin Logical, whether to plot from 0 (default: FALSE).
+#' @param CI Logical, whether to display confidence intervals (default: TRUE).
+#' @param mode Character. Either "collapsed" (default) or "expanded". Controls labeling in the lower panel.
 #'
-#' @return A Plotly object representing the combined MF curve plot.
-#'
-#' @examples
-#' \dontrun{
-#'   # Assuming 'processed' is created by mfcurve_preprocessing
-#'   plot_obj <- mfcurve_plotting(processed, outcome = "wage", showTitle = TRUE)
-#'   print(plot_obj)
-#' }
-#'
-#' @import plotly
+#' @return A plotly object (invisible).
 #' @export
-mfcurve_plotting <- function(processed_data, outcome, showTitle = TRUE) {
-  # Extract components from the processed data list
-  group_stats_vis <- processed_data$group_stats_vis
-  lower_data <- processed_data$lower_data
-  grand_mean <- processed_data$grand_mean
-  axis_limits <- processed_data$axis_limits
-  factor_positions <- processed_data$factor_positions
+mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
+                             outcome, factors, level,
+                             rounding = 2, showTitle = TRUE,
+                             plotOrigin = FALSE, CI = TRUE,
+                             mode = "collapsed") {
 
-  # Create the upper panel: plot group means with confidence intervals
-  upper_plot <- plotly::plot_ly(
-    data = group_stats_vis,
-    x = ~rank,
-    y = ~mean_outcome_vis,
-    error_y = list(
-      type = "data",
-      symmetric = FALSE,
-      array = group_stats_vis$ci_upper_vis - group_stats_vis$mean_outcome_vis,
-      arrayminus = group_stats_vis$mean_outcome_vis - group_stats_vis$ci_lower_vis
-    ),
-    text = ~paste0("Mean: ", mean_outcome_vis, "<br>",
-                   "SD: ", sd_outcome_vis, "<br>",
-                   "CI: [", ci_lower_vis, ", ", ci_upper_vis, "] / ±", ci_width_vis),
-    hoverinfo = 'text',
-    type = 'scatter',
-    mode = 'markers',
-    marker = list(color = ifelse(group_stats_vis$sig, 'red', 'blue')),
-    name = 'Group Means'
-  ) %>%
+  # Expand factor labels if mode is "expanded"
+  if (mode == "expanded") {
+    lower_data <- lower_data %>%
+      dplyr::mutate(factor = paste(factor, level, sep = " "))
+  }
+
+  # Assign positions to factors AFTER adjusting names
+  factor_levels <- unique(lower_data$factor)
+  factor_positions <- data.frame(
+    factor = factor_levels,
+    y = seq(length(factor_levels), 1)
+  )
+  lower_data <- dplyr::left_join(lower_data, factor_positions, by = "factor")
+
+  # Round values for visual representation
+  group_stats_vis <- dplyr::mutate(group_stats_vis,
+                                   mean_outcome_vis = round(mean_outcome, rounding),
+                                   sd_outcome_vis = round(sd_outcome, rounding),
+                                   ci_lower_vis = round(ci_lower, rounding),
+                                   ci_upper_vis = round(ci_upper, rounding),
+                                   ci_width_vis = round(ci_width, rounding))
+
+  # Axis limits
+  x_min <- min(group_stats_vis$rank)
+  x_max <- max(group_stats_vis$rank) + 0.5
+  y_min <- min(group_stats_vis$ci_lower_vis)
+  y_max <- max(group_stats_vis$ci_upper_vis)
+  if (plotOrigin) {
+    x_min <- min(x_min, 0)
+    y_min <- min(y_min, 0)
+  }
+
+  # Upper plot
+  upper_plot <- plotly::plot_ly(data = group_stats_vis)
+
+  if (CI) {
+    upper_plot <- upper_plot %>%
+      plotly::add_trace(
+        x = ~rank,
+        y = ~mean_outcome_vis,
+        error_y = list(
+          type = 'data',
+          symmetric = FALSE,
+          array = ~ci_upper_vis - mean_outcome_vis,
+          arrayminus = ~mean_outcome_vis - ci_lower_vis
+        ),
+        type = 'scatter',
+        mode = 'markers',
+        marker = list(symbol = ~ifelse(sig, 'diamond', 'circle')),
+        text = ~paste0(
+          "Mean: ", mean_outcome_vis, "<br>",
+          "SD: ", sd_outcome_vis, "<br>",
+          round(level * 100), "%-CI: [", ci_lower_vis, ", ", ci_upper_vis, "]<br>",
+          "Group size: ", n
+        ),
+        hoverinfo = 'text',
+        name = 'Group Means'
+      )
+  } else {
+    upper_plot <- upper_plot %>%
+      plotly::add_trace(
+        x = ~rank,
+        y = ~mean_outcome_vis,
+        type = 'scatter',
+        mode = 'markers',
+        marker = list(symbol = ~ifelse(sig, 'diamond', 'circle')),
+        text = ~paste0(
+          "Mean: ", mean_outcome_vis, "<br>",
+          "SD: ", sd_outcome_vis, "<br>",
+          "Group size: ", n
+        ),
+        hoverinfo = 'text',
+        name = 'Group Means'
+      )
+  }
+
+  offset <- 0.08 * (y_max - y_min)
+  upper_plot <- upper_plot %>%
     plotly::add_trace(
-      x = c(min(group_stats_vis$rank), max(group_stats_vis$rank)),
+      data = dplyr::filter(group_stats_vis, sig),
+      x = ~rank,
+      y = ~ci_upper_vis + offset,
+      mode = 'markers',
+      type = 'scatter',
+      marker = list(symbol = "star-dot", size = 8, color = "black"),
+      name = "Significant values",
+      hoverinfo = 'skip',
+      showlegend = TRUE
+    ) %>%
+    plotly::add_trace(
+      x = c(x_min, x_max),
       y = c(grand_mean, grand_mean),
       type = 'scatter',
       mode = 'lines',
       line = list(dash = 'dash'),
-      name = 'Grand Mean',
-      inherit = FALSE
+      name = 'Grand Mean'
     ) %>%
     plotly::layout(
-      xaxis = list(
-        range = if (!is.null(axis_limits$x_min)) c(axis_limits$x_min, axis_limits$x_max) else NULL,
-        showgrid = FALSE
-      ),
-      yaxis = list(
-        range = if (!is.null(axis_limits$y_min)) c(axis_limits$y_min, axis_limits$y_max) else NULL,
-        showgrid = TRUE
-      )
+      xaxis = list(range = c(x_min, x_max)),
+      yaxis = list(range = c(y_min, y_max))
     )
 
-  # Create the lower panel: display factor level labels
+  # Lower plot
   lower_plot <- plotly::plot_ly(
     data = lower_data,
     x = ~rank,
@@ -76,52 +134,37 @@ mfcurve_plotting <- function(processed_data, outcome, showTitle = TRUE) {
     hoverinfo = 'text',
     type = 'scatter',
     mode = 'markers',
-    marker = list(
-      size = 10,
-      color = ~level_code,
-      colorscale = 'Viridis'
-    ),
+    marker = list(size = 10, color = ~level_code, colorscale = 'Viridis'),
     showlegend = FALSE
   ) %>%
     plotly::layout(
       yaxis = list(
         tickvals = factor_positions$y,
         ticktext = factor_positions$factor,
-        autorange = "reversed",
-        showgrid = TRUE
+        autorange = "reversed"
       ),
-      xaxis = list(
-        title = "Group Rank",
-        tickvals = group_stats_vis$rank,
-        ticktext = as.character(group_stats_vis$rank),
-        showgrid = FALSE
-      )
+      xaxis = list(title = "Group Rank")
     )
 
-  # Combine the two panels into one subplot with shared x-axis
-  combined_plot <- plotly::subplot(
-    upper_plot, lower_plot,
-    nrows = 2,
-    shareX = TRUE,
-    heights = c(0.7, 0.3)
-  )
+  # Combine upper and lower panels
+  title <- paste("Mean", outcome, "by the combination of", paste(factors, collapse = " / "))
+  combined <- plotly::subplot(upper_plot, lower_plot, nrows = 2, shareX = TRUE, heights = c(0.7, 0.3))
 
-  # Add a title and axis labels if requested
-  title_text <- paste("Mean", outcome, "by the combination of factors")
   if (showTitle) {
-    combined_plot <- combined_plot %>%
+    combined <- combined %>%
       plotly::layout(
-        title = list(text = title_text, x = 0.5),
+        title = list(text = title, x = 0.5),
         yaxis = list(title = outcome),
-        yaxis2 = list(title = "Factors", showticklabels = TRUE)
+        yaxis2 = list(title = "Factors")
       )
   } else {
-    combined_plot <- combined_plot %>%
+    combined <- combined %>%
       plotly::layout(
         yaxis = list(title = outcome),
-        yaxis2 = list(title = "Factors", showticklabels = TRUE)
+        yaxis2 = list(title = "Factors")
       )
   }
 
-  return(combined_plot)
+  print(combined)
+  invisible(combined)
 }

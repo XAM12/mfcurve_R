@@ -14,13 +14,15 @@ source("R/preprocessing.R")
 source("R/plotting.R")
 
 ###############################################################################
-#                              Minimal Example                                #
+#                               Load Libraries                                #
 ###############################################################################
+library(dplyr)
+library(tidyr)
+library(plotly)
 
-## Simulated Dataset (Minimal Example)
-# Generate a dataset with 1000 observations.
-# 'wage' is normally distributed, and factors ('race', 'south', 'union') are randomly assigned.
-library(tidyverse)
+###############################################################################
+#                               Simulate Data                                 #
+###############################################################################
 set.seed(123)
 n <- 1000
 df <- data.frame(
@@ -30,110 +32,76 @@ df <- data.frame(
   union = sample(c("Yes", "No"), n, replace = TRUE)
 )
 
-## Minimal Data Preprocessing and Statistical Testing
-# This function removes missing values, creates a group identifier from the factors,
-# calculates group-level summary statistics (including t-tests, confidence intervals, and significance),
-# and prepares the data for plotting.
-analysis_results_min <- mfcurve_preprocessing(
-  data = df,
-  outcome = "wage",
-  factors = c("race", "south", "union")
-)
-
-## Minimal Interactive Visualization
-# The plotting function creates an interactive Plotly plot that combines an upper panel (group means with
-# confidence intervals and group sizes in the hover text) and a lower panel with factor level labels.
-plot_minimal <- mfcurve_plotting(
-  processed_data = analysis_results_min,
-  outcome = "wage",
-  showTitle = TRUE
-)
-print(plot_minimal)
+outcome_var <- "wage"
+factor_vars <- c("race", "south", "union")
 
 ###############################################################################
-#                           Extended Example                                  #
+#                           TEST CASE 1: Base + Rounding                      #
 ###############################################################################
-
-## For extended examples, we vary the preprocessing parameters 'mode' and 'plotOrigin'
-## to see differences in the lower panel labels and axis settings.
-## (Note: parameters such as 'upper_fixed_range' and 'color_scheme' have been removed,
-##  as the current functions use default settings.)
-
-# Example Plot 1: Collapsed Mode, default plotOrigin (FALSE)
-analysis_results1 <- mfcurve_preprocessing(
-  data = df,
-  outcome = "wage",
-  factors = c("race", "south", "union"),
-  mode = "collapsed",   # Lower panel shows only factor names.
-  plotOrigin = FALSE    # Let Plotly determine axis limits.
+prep1 <- mfcurve_preprocessing(df, outcome = outcome_var, factors = factor_vars)
+plottest <- mfcurve_plotting(
+  group_stats_vis = prep1$group_stats_vis,
+  lower_data = prep1$lower_data,
+  grand_mean = prep1$grand_mean,
+  outcome = outcome_var,
+  factors = factor_vars,
+  level = prep1$level,
+  rounding = 1
 )
-plot1 <- mfcurve_plotting(
-  processed_data = analysis_results1,
-  outcome = "wage",
-  showTitle = TRUE
-)
+group_stats <- prep1$group_stats  # mimic SaveProcessedData = TRUE
 
-# Example Plot 2: Expanded Mode, default plotOrigin (FALSE)
-analysis_results2 <- mfcurve_preprocessing(
-  data = df,
-  outcome = "wage",
-  factors = c("race", "south", "union"),
-  mode = "expanded",    # Lower panel shows factor names with levels (e.g., "race White").
-  plotOrigin = FALSE
-)
-plot2 <- mfcurve_plotting(
-  processed_data = analysis_results2,
-  outcome = "wage",
-  showTitle = TRUE
+###############################################################################
+#                       TEST CASE 2: Mode = 'collapsed'                       #
+###############################################################################
+prep2 <- mfcurve_preprocessing(df, outcome = outcome_var, factors = factor_vars)
+plottest_collapsed <- mfcurve_plotting(
+  group_stats_vis = prep2$group_stats_vis,
+  lower_data = prep2$lower_data,
+  grand_mean = prep2$grand_mean,
+  outcome = outcome_var,
+  factors = factor_vars,
+  level = prep2$level,
+  mode = "collapsed"
 )
 
-# Example Plot 3: Collapsed Mode with Coordinate Origin Included
-analysis_results3 <- mfcurve_preprocessing(
-  data = df,
-  outcome = "wage",
-  factors = c("race", "south", "union"),
-  mode = "collapsed",
-  plotOrigin = TRUE     # Force axes to include the origin.
-)
-plot3 <- mfcurve_plotting(
-  processed_data = analysis_results3,
-  outcome = "wage",
-  showTitle = TRUE
-)
-
-# Example Plot 4: Expanded Mode with Coordinate Origin Included
-analysis_results4 <- mfcurve_preprocessing(
-  data = df,
-  test = "zero",
-  outcome = "wage",
-  factors = c("race", "south", "union"),
-  mode = "expanded",
-  plotOrigin = TRUE
-)
-plot4 <- mfcurve_plotting(
-  processed_data = analysis_results4,
-  outcome = "wage",
-  showTitle = TRUE
+###############################################################################
+#                       TEST CASE 3: Mode = 'expanded'                        #
+###############################################################################
+prep3 <- mfcurve_preprocessing(df, outcome = outcome_var, factors = factor_vars)
+plottest_expanded <- mfcurve_plotting(
+  group_stats_vis = prep3$group_stats_vis,
+  lower_data = prep3$lower_data,
+  grand_mean = prep3$grand_mean,
+  outcome = outcome_var,
+  factors = factor_vars,
+  level = prep3$level,
+  mode = "expanded"
 )
 
-## Display the Extended Example Plots
-print(plot1)  # Collapsed mode, default axis limits.
-print(plot2)  # Expanded mode, default axis limits.
-print(plot3)  # Collapsed mode with (0,0) included in axes.
-print(plot4)  # Expanded mode with (0,0) included in axes.
+###############################################################################
+#                       TEST CASE 4: CI = FALSE                               #
+###############################################################################
+prep4 <- mfcurve_preprocessing(df, outcome = outcome_var, factors = factor_vars)
+plottest_no_CI <- mfcurve_plotting(
+  group_stats_vis = prep4$group_stats_vis,
+  lower_data = prep4$lower_data,
+  grand_mean = prep4$grand_mean,
+  outcome = outcome_var,
+  factors = factor_vars,
+  level = prep4$level,
+  CI = FALSE
+)
 
-# Expanded Mode der Grafik mit jeweils eigenen Farben für jeden Faktor
-# (anstatt aktuell alle Faktoren erhalten dieselbe Farbe) Collapsed Mode der
-# Grafik, jeweils unterschiedliche Farben für unterschiedliche Faktorstufen,
-# keine doppelte Vergabe der gleichen Farben Schwarz-Weiß Modus für die
-# Grafik, analog zur Stata Grafik Halber und voller Kreis für Faktorstufe
-# liegt nicht vor/ vor anstatt aktuell keine Kennzeichnung vs. voller Kreis
-# mit verschiedenen Farben oberes Panel fixieren
-# done. preprocessing und stat_testing in eine Funktion
-# done. expanded mode hat kringel --> die sollen ausgefüllt
-# line spacing um die faktoren weiter voneinander trennen
-# bei plotOrigin true sind Achsen komisch dargestellt
-# KI anzeigen ja/nein im plotting befehl und nicht interaktiv //Max
-# Gruppengrößen mit in der hoverbox anzeigen + vllt als printoption für die, die png und nicht interaktiv//Max
-# Signifikante sachen flaggen beim testen //Max
-# signifikante sachen raute statt kreis //Max
+###############################################################################
+#                       TEST CASE 5: CI = TRUE                                #
+###############################################################################
+prep5 <- mfcurve_preprocessing(df, outcome = outcome_var, factors = factor_vars)
+plottest_with_CI <- mfcurve_plotting(
+  group_stats_vis = prep5$group_stats_vis,
+  lower_data = prep5$lower_data,
+  grand_mean = prep5$grand_mean,
+  outcome = outcome_var,
+  factors = factor_vars,
+  level = prep5$level,
+  CI = TRUE
+)
