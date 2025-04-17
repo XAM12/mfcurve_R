@@ -5,11 +5,10 @@ Version: 1.0.0
 Authors@R: c(
     person("Daniel", "Krähmer", email = "Daniel.Kraehmer@soziologie.uni-muenchen.de", role = c("aut", "cre")),
     person("Maximilian", "Frank", email = "maximilian.frank@psy.lmu.de", role = "aut"),
-    person("Claudia", "Weileder", email = "claudia.weileder@gmail.com", role = c("aut", "cre"))
-)
-Description: Provides functions for multi-factor curve analysis, replicating and extending the functionality 
-    of the Stata mfcurve ado. Includes data preprocessing, statistical testing, and visualization of results 
-    with confidence intervals.
+    person("Claudia", "Weileder", email = "claudia.weileder@gmail.com", role = "aut"))
+Description: Provides functions for multi-factor curve analysis, replicating and
+    extending the functionality of the Stata mfcurve ado. Includes data preprocessing,
+    statistical testing, and visualization of results with confidence intervals.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -18,10 +17,10 @@ RoxygenNote: 7.3.2
 Imports: 
     dplyr,
     stats,
-    magrittr,
     plotly,
     rlang,
-    tidyr
+    tidyr,
+    tidyselect
 Suggests: 
     knitr,
     rmarkdown,

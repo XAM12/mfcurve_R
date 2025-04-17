@@ -2,66 +2,32 @@
 % Please edit documentation in R/preprocessing.R
 \name{mfcurve_preprocessing}
 \alias{mfcurve_preprocessing}
-\title{Data Preprocessing for MF Curve Analysis}
+\title{Preprocess Data and Compute Group Statistics}
 \usage{
-mfcurve_preprocessing(
-  data,
-  outcome,
-  factors,
-  alpha = 0.05,
-  rounding = 2,
-  mode = "collapsed"
-)
+mfcurve_preprocessing(data, outcome, factors, alpha = 0.05, test = "mean")
 }
 \arguments{
-\item{data}{A data frame containing the raw data.}
+\item{data}{A data frame containing the variables.}
 
-\item{outcome}{A character string specifying the name of the outcome variable.}
+\item{outcome}{A string indicating the name of the outcome variable (numeric).}
 
-\item{factors}{A character vector specifying the names of the grouping factor variables.}
+\item{factors}{A character vector of factor variable names to define groups.}
 
-\item{alpha}{A numeric value specifying the significance level for the t-tests and confidence intervals (default is 0.05).}
+\item{alpha}{Significance level for the t-tests and confidence intervals. Default is 0.05.}
 
-\item{rounding}{An integer indicating the number of decimal places to which the visualization values are rounded (default is 2).}
-
-\item{mode}{A character string indicating the mode for factor representation in the lower panel. Options are "collapsed" or "expanded" (default is "collapsed").}
+\item{test}{A string indicating the reference value for t-tests: "mean" (group mean vs. grand mean) or "zero" (group mean vs. 0).}
 }
 \value{
-A list with the following elements:
+A list with:
 \describe{
+\item{group_stats}{A data frame with computed statistics and CI bounds.}
+\item{group_stats_vis}{A visualization-ready version with rounded numbers.}
+\item{lower_data}{Data for the lower panel of the plot (without y positions).}
 \item{grand_mean}{The overall mean of the outcome variable.}
-\item{group_stats}{A data frame containing group-level statistics (mean, standard deviation, sample size, t-statistic, p-value, significance, rank, standard error, and confidence intervals).}
-\item{group_stats_vis}{A version of \code{group_stats} with numerical values rounded for visualization.}
-\item{lower_data}{A data frame prepared for the lower panel display, showing factor levels.}
-\item{factor_positions}{A data frame providing y-axis positions for each factor in the lower panel plot.}
-\item{factors}{The original vector of factor names provided as input.}
+\item{level}{The confidence level used.}
 }
 }
 \description{
-This function performs data preprocessing and analysis to compute group-level statistics,
-t-tests, and confidence intervals, and then prepares the data for visualization. The input data
-is expected to include an outcome variable and one or more grouping factors. Missing values in the
-specified variables are removed. The function returns a list containing processed statistics and
-additional data required for plotting.
-}
-\examples{
-\dontrun{
-  # Load required packages
-  library(dplyr)
-  library(tidyr)
-
-  # Simulate sample data similar to an 'nlsw' dataset
-  set.seed(123)
-  n <- 1000
-  df <- data.frame(
-    wage = rnorm(n, mean = 15, sd = 5),
-    race = sample(c("White", "Black", "Other"), n, replace = TRUE),
-    south = sample(c("Yes", "No"), n, replace = TRUE),
-    union = sample(c("Yes", "No"), n, replace = TRUE)
-  )
-
-  # Preprocess the data
-  preprocessed <- mfcurve_preprocessing(df, outcome = "wage", factors = c("race", "south", "union"))
-}
-
+This function prepares data and computes descriptive statistics and t-tests
+for groups defined by combinations of categorical factors.
 }
