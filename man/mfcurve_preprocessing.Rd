@@ -15,7 +15,8 @@ mfcurve_preprocessing(data, outcome, factors, alpha = 0.05, test = "mean")
 
 \item{alpha}{Significance level for the t-tests and confidence intervals. Default is 0.05.}
 
-\item{test}{A string indicating the reference value for t-tests: "mean" (group mean vs. grand mean) or "zero" (group mean vs. 0).}
+\item{test}{A string indicating the reference value for t-tests: "mean" (grand mean),
+"leave-one-out" (mean of all other groups), or "zero".}
 }
 \value{
 A list with:

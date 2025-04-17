@@ -25,7 +25,7 @@ mfcurve(
 
 \item{factors}{A character vector of factor variable names to define groups.}
 
-\item{test}{A string indicating the reference value for t-tests: "mean" or "zero". Passed to preprocessing.}
+\item{test}{A string indicating the reference value for t-tests: "mean" or "zero" or "leave-one-out". Passed to preprocessing.}
 
 \item{alpha}{Significance level for t-tests and confidence intervals. Default is 0.05.}
 

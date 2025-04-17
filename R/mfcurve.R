@@ -6,7 +6,7 @@
 #' @param data A data frame containing the variables.
 #' @param outcome A string indicating the name of the outcome variable (numeric).
 #' @param factors A character vector of factor variable names to define groups.
-#' @param test A string indicating the reference value for t-tests: "mean" or "zero". Passed to preprocessing.
+#' @param test A string indicating the reference value for t-tests: "mean" or "zero" or "leave-one-out". Passed to preprocessing.
 #' @param alpha Significance level for t-tests and confidence intervals. Default is 0.05.
 #' @param showTitle Logical. Should the title be shown in the plot? Default is TRUE.
 #' @param SaveProcessedData Logical. If TRUE, saves \code{group_stats} to the global environment. Default is FALSE.

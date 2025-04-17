@@ -7,7 +7,8 @@
 #' @param outcome A string indicating the name of the outcome variable (numeric).
 #' @param factors A character vector of factor variable names to define groups.
 #' @param alpha Significance level for the t-tests and confidence intervals. Default is 0.05.
-#' @param test A string indicating the reference value for t-tests: "mean" (group mean vs. grand mean) or "zero" (group mean vs. 0).
+#' @param test A string indicating the reference value for t-tests: "mean" (grand mean),
+#' "leave-one-out" (mean of all other groups), or "zero".
 #'
 #' @return A list with:
 #' \describe{
@@ -19,64 +20,105 @@
 #' }
 #' @export
 mfcurve_preprocessing <- function(data, outcome, factors, alpha = 0.05, test = "mean") {
-  # Input validation
   if (!is.numeric(data[[outcome]])) {
     stop("The outcome variable must be numeric.")
   }
-  if (!test %in% c("mean", "zero")) {
-    stop('Argument "test" must be either "mean" or "zero".')
+  if (!test %in% c("mean", "zero", "leave-one-out")) {
+    stop('Argument "test" must be one of "mean", "zero", or "leave-one-out".')
   }
 
-  # Remove missing values
   vars <- c(outcome, factors)
   data <- tidyr::drop_na(data, tidyselect::all_of(vars))
 
-  # Create group variable
   data <- dplyr::mutate(data, group = interaction(dplyr::across(tidyselect::all_of(factors)), sep = "_"))
-
-  # Compute grand mean
   grand_mean <- mean(data[[outcome]])
 
-  # Group statistics
-  group_stats <- data |>
-    dplyr::group_by(group) |>
+  group_stats <- data %>%
+    dplyr::group_by(group) %>%
     dplyr::summarize(
       mean_outcome = mean(.data[[outcome]]),
       sd_outcome = sd(.data[[outcome]]),
       n = dplyr::n(),
       .groups = "drop"
-    ) |>
-    dplyr::mutate(
-      test_value = if (test == "mean") grand_mean else 0,
-      t_stat = (mean_outcome - test_value) / (sd_outcome / sqrt(n)),
-      p_value = 2 * stats::pt(-abs(t_stat), df = n - 1),
-      sig = p_value < alpha
-    ) |>
-    dplyr::arrange(mean_outcome) |>
+    )
+
+  total_N <- nrow(data)
+  total_sum <- sum(data[[outcome]])
+  total_ss <- sum((data[[outcome]] - grand_mean)^2)
+
+  if (test == "mean") {
+    group_stats <- group_stats %>%
+      dplyr::mutate(
+        t_stat = (mean_outcome - grand_mean) / (sd_outcome / sqrt(n)),
+        p_value = 2 * stats::pt(-abs(t_stat), df = n - 1),
+        sig = p_value < alpha
+      )
+  } else if (test == "zero") {
+    group_stats <- group_stats %>%
+      dplyr::mutate(
+        t_stat = mean_outcome / (sd_outcome / sqrt(n)),
+        p_value = 2 * stats::pt(-abs(t_stat), df = n - 1),
+        sig = p_value < alpha
+      )
+  } else if (test == "leave-one-out") {
+    group_stats <- group_stats %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(
+        others_n = total_N - n,
+        group_sum = mean_outcome * n,
+        others_mean = (total_sum - group_sum) / others_n,
+        group_ss = (n - 1) * (sd_outcome^2),
+        others_ss = total_ss - group_ss,
+        others_sd = ifelse(others_n > 1, sqrt(others_ss / (others_n - 1)), NA_real_),
+        se_diff = sqrt((sd_outcome^2 / n) + (others_sd^2 / others_n)),
+        var1 = sd_outcome^2 / n,
+        var2 = others_sd^2 / others_n,
+        df_calc = (var1 + var2)^2 / ((var1^2 / (n - 1)) + (var2^2 / (others_n - 1))),
+        t_stat = (mean_outcome - others_mean) / se_diff,
+        p_value = 2 * stats::pt(-abs(t_stat), df = df_calc),
+        sig = p_value < alpha
+      ) %>%
+      dplyr::ungroup()
+  }
+
+  group_stats <- group_stats %>%
+    dplyr::mutate(test_type = test) %>%
+    dplyr::arrange(mean_outcome) %>%
     dplyr::mutate(rank = dplyr::row_number())
 
-  # Confidence intervals
   level <- 1 - alpha
-  group_stats <- dplyr::mutate(group_stats,
-                               se = sd_outcome / sqrt(n),
-                               ci_lower = mean_outcome - stats::qt(1 - alpha / 2, df = n - 1) * se,
-                               ci_upper = mean_outcome + stats::qt(1 - alpha / 2, df = n - 1) * se,
-                               ci_width = (ci_upper - ci_lower) / 2
-  )
 
-  # Visualization-ready version (not rounded here; rounding is applied in plotting)
+  group_stats <- group_stats %>%
+    dplyr::mutate(
+      se = sd_outcome / sqrt(n),
+      df = n - 1
+    ) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+      ci_lower = if (!is.na(df) && df >= 1) {
+        mean_outcome - stats::qt(1 - alpha / 2, df = df) * se
+      } else {
+        NA_real_
+      },
+      ci_upper = if (!is.na(df) && df >= 1) {
+        mean_outcome + stats::qt(1 - alpha / 2, df = df) * se
+      } else {
+        NA_real_
+      },
+      ci_width = (ci_upper - ci_lower) / 2
+    ) %>%
+    dplyr::ungroup()
+
   group_stats_vis <- group_stats
 
-  # Separate group back into factors
   group_stats <- tidyr::separate(group_stats, group, into = factors, sep = "_")
   group_stats_vis <- tidyr::separate(group_stats_vis, group, into = factors, sep = "_")
 
-  # Prepare lower panel data (no y positions)
-  lower_data <- group_stats |>
-    dplyr::select(rank, tidyselect::all_of(factors)) |>
-    tidyr::pivot_longer(cols = -rank, names_to = "factor", values_to = "level") |>
-    dplyr::group_by(factor) |>
-    dplyr::mutate(level_code = as.numeric(factor(level))) |>
+  lower_data <- group_stats %>%
+    dplyr::select(rank, tidyselect::all_of(factors)) %>%
+    tidyr::pivot_longer(cols = -rank, names_to = "factor", values_to = "level") %>%
+    dplyr::group_by(factor) %>%
+    dplyr::mutate(level_code = as.numeric(factor(level))) %>%
     dplyr::ungroup()
 
   return(list(
