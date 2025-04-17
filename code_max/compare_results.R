@@ -106,7 +106,3 @@ plottest_with_CI <- mfcurve_plotting(
   level = prep5$level,
   CI = TRUE
 )
-
-# erst mean dann grand mean und dann signifikantsterne
-# rlang raus?
-# sind die packages automatisch gezogen wenn mfcurve installiert wird

@@ -34,12 +34,10 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
       dplyr::arrange(factor_var, factor_lbl, .by_group = TRUE) %>%
       dplyr::ungroup()
 
-    # Add spacing between blocks for expanded mode
     factor_blocks <- split(lower_data, lower_data$factor_var)
     y_pos <- c()
     factor_order <- c()
     spacing <- 0.6
-
     current_y <- 0
     for (block in factor_blocks) {
       n_levels <- length(unique(block$factor_lbl))
@@ -49,27 +47,20 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
       current_y <- max(block_y) + spacing
     }
 
-    factor_positions <- data.frame(
-      factor = factor_order,
-      y = y_pos
-    )
+    factor_positions <- data.frame(factor = factor_order, y = y_pos)
     lower_data$factor <- lower_data$factor_lbl
     lower_data <- dplyr::select(lower_data, -factor_var, -factor_lbl)
-
-    # Assign same color per factor_var (e.g., union) in expanded mode
     lower_data <- lower_data %>%
       dplyr::mutate(factor_group = sub("^(.*?) .*", "\\1", factor)) %>%
       dplyr::mutate(level_code = as.numeric(factor(factor_group)))
 
   } else {
-    # collapsed mode
     factor_levels <- unique(lower_data$factor)
     factor_positions <- data.frame(
       factor = factor_levels,
       y = seq(length(factor_levels), 1)
     )
 
-    # Jedes unique factor + level bekommt eigene Farbe
     lower_data <- lower_data %>%
       dplyr::mutate(factor_level_combo = paste(factor, level, sep = ":")) %>%
       dplyr::mutate(level_code = as.numeric(factor(factor_level_combo)))
@@ -82,7 +73,8 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
                                    sd_outcome_vis = round(sd_outcome, rounding),
                                    ci_lower_vis = round(ci_lower, rounding),
                                    ci_upper_vis = round(ci_upper, rounding),
-                                   ci_width_vis = round(ci_width, rounding))
+                                   ci_width_vis = round(ci_width, rounding)
+  )
 
   x_min <- min(group_stats_vis$rank) - 0.5
   x_max <- max(group_stats_vis$rank) + 0.5
@@ -140,7 +132,16 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
       )
   }
 
+  # Grand Mean zuerst, dann Significant values
   upper_plot <- upper_plot %>%
+    plotly::add_trace(
+      x = c(x_min, x_max),
+      y = c(grand_mean, grand_mean),
+      type = 'scatter',
+      mode = 'lines',
+      line = list(dash = 'dash'),
+      name = 'Grand Mean'
+    ) %>%
     plotly::add_trace(
       data = dplyr::filter(group_stats_vis, sig),
       x = ~rank,
@@ -151,14 +152,6 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
       name = "Significant values",
       hoverinfo = 'skip',
       showlegend = TRUE
-    ) %>%
-    plotly::add_trace(
-      x = c(x_min, x_max),
-      y = c(grand_mean, grand_mean),
-      type = 'scatter',
-      mode = 'lines',
-      line = list(dash = 'dash'),
-      name = 'Grand Mean'
     ) %>%
     plotly::layout(
       xaxis = list(range = c(x_min, x_max), fixedrange = TRUE),
