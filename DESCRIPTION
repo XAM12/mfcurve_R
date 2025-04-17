@@ -19,7 +19,6 @@ Imports:
     dplyr,
     stats,
     plotly,
-    rlang,
     tidyr,
     tidyselect
 Suggests: 
