@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{mfcurve_plotting}
 \alias{mfcurve_plotting}
-\title{Plot Group Differences with Confidence Intervals}
+\title{Create a two-panel mfcurve plot from processed statistics}
 \usage{
 mfcurve_plotting(
   group_stats_vis,
@@ -15,36 +15,38 @@ mfcurve_plotting(
   showTitle = TRUE,
   plotOrigin = FALSE,
   CI = TRUE,
-  mode = "collapsed"
+  mode = "collapsed",
+  showGrandMean = TRUE,
+  showSigStars = TRUE
 )
 }
 \arguments{
-\item{group_stats_vis}{Data frame with visual group statistics (from preprocessing).}
+\item{group_stats_vis}{Data frame containing group-level summary statistics.}
 
-\item{lower_data}{Data for the lower panel (from preprocessing).}
+\item{lower_data}{Data frame defining the factor structure for the lower panel.}
 
-\item{grand_mean}{The grand mean of the outcome variable.}
+\item{grand_mean}{Numeric. The overall mean of the outcome variable.}
 
-\item{outcome}{The name of the outcome variable (string).}
+\item{outcome}{Name of the outcome variable (string).}
 
 \item{factors}{Character vector of factor variable names.}
 
-\item{level}{Confidence level (e.g., 0.95).}
+\item{level}{Level for confidence intervals (e.g., 0.95).}
 
-\item{rounding}{Rounding digits for the plot (default: 2).}
+\item{rounding}{Number of digits to round outcome values. Default is 2.}
 
-\item{showTitle}{Logical, whether to show the plot title (default: TRUE).}
+\item{showTitle}{Logical. Show the plot title? Default is TRUE.}
 
-\item{plotOrigin}{Logical, whether to plot from 0 (default: FALSE).}
+\item{plotOrigin}{Logical. Force axes to include 0? Default is FALSE.}
 
-\item{CI}{Logical, whether to display confidence intervals (default: TRUE).}
+\item{CI}{Logical. Display confidence intervals? Default is TRUE.}
 
-\item{mode}{Character. Either "collapsed" (default) or "expanded". Controls labeling in the lower panel.}
+\item{mode}{Labeling mode for the lower panel: "collapsed" (default) or "expanded".}
 }
 \value{
 A plotly object (invisible).
 }
 \description{
-Creates a two-panel interactive plot showing group means (with confidence intervals)
-and the corresponding factor combinations.
+Generates an interactive two-panel plot showing group means (with optional confidence intervals)
+and corresponding factor combinations.
 }

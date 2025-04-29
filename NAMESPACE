@@ -3,3 +3,4 @@
 export(mfcurve)
 export(mfcurve_plotting)
 export(mfcurve_preprocessing)
+importFrom(magrittr,"%>%")

@@ -2,33 +2,32 @@
 % Please edit documentation in R/preprocessing.R
 \name{mfcurve_preprocessing}
 \alias{mfcurve_preprocessing}
-\title{Preprocess Data and Compute Group Statistics}
+\title{Preprocess data and compute group statistics}
 \usage{
 mfcurve_preprocessing(data, outcome, factors, alpha = 0.05, test = "mean")
 }
 \arguments{
-\item{data}{A data frame containing the variables.}
+\item{data}{Data frame containing the variables.}
 
-\item{outcome}{A string indicating the name of the outcome variable (numeric).}
+\item{outcome}{Name of the numeric outcome variable (string).}
 
-\item{factors}{A character vector of factor variable names to define groups.}
+\item{factors}{Character vector of factor variable names for grouping.}
 
 \item{alpha}{Significance level for the t-tests and confidence intervals. Default is 0.05.}
 
-\item{test}{A string indicating the reference value for t-tests: "mean" (grand mean),
-"leave-one-out" (mean of all other groups), or "zero".}
+\item{test}{Reference for t-tests: "mean" (grand mean), "leave-one-out" (mean of all other groups), or "zero" (testing against 0).}
 }
 \value{
-A list with:
+A list containing:
 \describe{
-\item{group_stats}{A data frame with computed statistics and CI bounds.}
-\item{group_stats_vis}{A visualization-ready version with rounded numbers.}
-\item{lower_data}{Data for the lower panel of the plot (without y positions).}
+\item{group_stats}{A data frame with computed statistics and confidence interval bounds.}
+\item{group_stats_vis}{A visualization-ready version with rounded values.}
+\item{lower_data}{A data frame for the lower panel of the plot (without y positions).}
 \item{grand_mean}{The overall mean of the outcome variable.}
 \item{level}{The confidence level used.}
 }
 }
 \description{
-This function prepares data and computes descriptive statistics and t-tests
+Prepares the data and computes descriptive statistics and t-tests
 for groups defined by combinations of categorical factors.
 }

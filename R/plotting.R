@@ -1,27 +1,30 @@
-#' Plot Group Differences with Confidence Intervals
+#' Create a two-panel mfcurve plot from processed statistics
 #'
-#' Creates a two-panel interactive plot showing group means (with confidence intervals)
-#' and the corresponding factor combinations.
+#' Generates an interactive two-panel plot showing group means (with optional confidence intervals)
+#' and corresponding factor combinations.
 #'
-#' @param group_stats_vis Data frame with visual group statistics (from preprocessing).
-#' @param lower_data Data for the lower panel (from preprocessing).
-#' @param grand_mean The grand mean of the outcome variable.
-#' @param outcome The name of the outcome variable (string).
-#' @param factors Character vector of factor variable names.
-#' @param level Confidence level (e.g., 0.95).
-#' @param rounding Rounding digits for the plot (default: 2).
-#' @param showTitle Logical, whether to show the plot title (default: TRUE).
-#' @param plotOrigin Logical, whether to plot from 0 (default: FALSE).
-#' @param CI Logical, whether to display confidence intervals (default: TRUE).
-#' @param mode Character. Either "collapsed" (default) or "expanded". Controls labeling in the lower panel.
+#' @param group_stats_vis Data frame containing group-level summary statistics.
+#' @param lower_data      Data frame defining the factor structure for the lower panel.
+#' @param grand_mean      Numeric. The overall mean of the outcome variable.
+#' @param outcome         Name of the outcome variable (string).
+#' @param factors         Character vector of factor variable names.
+#' @param level           Level for confidence intervals (e.g., 0.95).
+#' @param rounding        Number of digits to round outcome values. Default is 2.
+#' @param showTitle       Logical. Show the plot title? Default is TRUE.
+#' @param plotOrigin      Logical. Force axes to include 0? Default is FALSE.
+#' @param CI              Logical. Display confidence intervals? Default is TRUE.
+#' @param mode            Labeling mode for the lower panel: "collapsed" (default) or "expanded".
 #'
 #' @return A plotly object (invisible).
 #' @export
+
 mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
                              outcome, factors, level,
                              rounding = 2, showTitle = TRUE,
                              plotOrigin = FALSE, CI = TRUE,
-                             mode = "collapsed") {
+                             mode = "collapsed",
+                             showGrandMean = TRUE,
+                             showSigStars = TRUE) {
 
   if (mode == "expanded") {
     lower_data <- lower_data %>%
@@ -133,26 +136,32 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
   }
 
   # Grand Mean zuerst, dann Significant values
+    if (showGrandMean) {
+      upper_plot <- upper_plot %>%
+        plotly::add_trace(
+          x = c(x_min, x_max),
+          y = c(grand_mean, grand_mean),
+          type = 'scatter',
+          mode = 'lines',
+          line = list(dash = 'dash'),
+          name = 'Grand Mean'
+        )
+    }
+    if (showSigStars) {
+      upper_plot <- upper_plot %>%
+        plotly::add_trace(
+          data = dplyr::filter(group_stats_vis, sig),
+          x = ~rank,
+          y = ~ci_upper_vis + offset,
+          mode = 'markers',
+          type = 'scatter',
+          marker = list(symbol = "star-dot", size = 8, color = "black"),
+          name = "Significant values",
+          hoverinfo = 'skip',
+          showlegend = TRUE
+        )
+    }
   upper_plot <- upper_plot %>%
-    plotly::add_trace(
-      x = c(x_min, x_max),
-      y = c(grand_mean, grand_mean),
-      type = 'scatter',
-      mode = 'lines',
-      line = list(dash = 'dash'),
-      name = 'Grand Mean'
-    ) %>%
-    plotly::add_trace(
-      data = dplyr::filter(group_stats_vis, sig),
-      x = ~rank,
-      y = ~ci_upper_vis + offset,
-      mode = 'markers',
-      type = 'scatter',
-      marker = list(symbol = "star-dot", size = 8, color = "black"),
-      name = "Significant values",
-      hoverinfo = 'skip',
-      showlegend = TRUE
-    ) %>%
     plotly::layout(
       xaxis = list(range = c(x_min, x_max), fixedrange = TRUE),
       yaxis = list(range = c(y_min, y_max), fixedrange = TRUE)

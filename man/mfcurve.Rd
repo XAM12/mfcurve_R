@@ -15,37 +15,88 @@ mfcurve(
   mode = "collapsed",
   rounding = 2,
   plotOrigin = FALSE,
-  CI = TRUE
+  CI = TRUE,
+  showGrandMean = TRUE,
+  showSigStars = TRUE
 )
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{A string indicating the name of the outcome variable (numeric).}
+\item{outcome}{Name of the numeric outcome variable (string).}
 
-\item{factors}{A character vector of factor variable names to define groups.}
+\item{factors}{Character vector of factor variable names for grouping.}
 
-\item{test}{A string indicating the reference value for t-tests: "mean" or "zero" or "leave-one-out". Passed to preprocessing.}
+\item{test}{Reference for t-tests: "mean", "zero", or "leave-one-out". Passed to preprocessing. Default is "mean".}
 
 \item{alpha}{Significance level for t-tests and confidence intervals. Default is 0.05.}
 
-\item{showTitle}{Logical. Should the title be shown in the plot? Default is TRUE.}
+\item{showTitle}{Logical. Show the plot title? Default is TRUE.}
 
-\item{SaveProcessedData}{Logical. If TRUE, saves \code{group_stats} to the global environment. Default is FALSE.}
+\item{SaveProcessedData}{Logical. Save group-level statistics to the global environment? Default is FALSE.}
 
-\item{mode}{Either "collapsed" (default) or "expanded". Controls factor labeling in lower panel.}
+\item{mode}{Factor labeling mode: "collapsed" (default) or "expanded".}
 
-\item{rounding}{Number of digits to round the outcome statistics in the plot. Default is 2.}
+\item{rounding}{Number of digits to round outcome statistics. Default is 2.}
 
-\item{plotOrigin}{Logical. If TRUE, axes will include origin (0). Default is FALSE.}
+\item{plotOrigin}{Logical. Force axes to include 0? Default is FALSE.}
 
-\item{CI}{Logical. Whether to display confidence intervals. Default is TRUE.}
+\item{CI}{Logical. Display confidence intervals? Default is TRUE.}
+
+\item{showGrandMean}{Logical. Show the grand mean line? Default is TRUE.}
+
+\item{showSigStars}{Logical. Show markers for significant values? Default is TRUE.}
 }
 \value{
 Invisibly returns the plotly object representing the two-panel plot.
-If \code{SaveProcessedData = TRUE}, the group-level statistics are assigned to the global environment.
+If \code{SaveProcessedData = TRUE}, also saves the group statistics as \code{group_stats} in the global environment.
 }
 \description{
 Calls \code{mfcurve_preprocessing()} and \code{mfcurve_plotting()} in sequence
-to create the full two-panel interactive plot.
+to generate a two-panel interactive mfcurve plot.
+}
+\details{
+\code{mfcurve()} plots the mean of an outcome variable across all combinations of multiple grouping factors, producing a two-panel interactive plot.
+
+The upper panel shows group means (and confidence intervals, if requested); the lower panel marks which factor levels are present in each group.
+In the lower panel, factor labels can be displayed in two modes:
+\itemize{
+\item In \strong{collapsed} mode, each factor occupies only one row. Factor levels are differentiated by marker color.
+\item In \strong{expanded} mode, each factor is split into its levels (dummy-coded), with levels listed below each other.
+Markers indicate whether a specific factor level is present or absent in the group.
+}
+
+While collapsed mode saves space when many factors or levels are present,
+expanded mode may be more intuitive (especially for readers familiar with specification curves).
+
+\code{mfcurve()} allows optional significance testing (t-tests). Group-level statistics can be saved if needed.
+}
+\examples{
+# Simulate data for a 3 x 2 experimental design: 3 treatments (A, B, C), 2 doses (low, high)
+set.seed(123)
+df <- data.frame(
+  treatment = sample(c("A", "B", "C"), 1000, replace = TRUE),
+  dose      = sample(c("low", "high"), 1000, replace = TRUE)
+)
+
+# Generate self-rated health (scale 1–10) with small group differences
+df$self_rated_health <- 6 +
+  ifelse(df$treatment == "B", 0.5, ifelse(df$treatment == "C", -0.5, 0)) +
+  ifelse(df$dose == "high", 0.3, 0) +
+  rnorm(1000, 0, 1.5)
+
+# Restrict health scores to valid range
+df$self_rated_health <- pmin(pmax(df$self_rated_health, 1), 10)
+
+# Create mfcurve plot
+mfcurve(
+  data = df,
+  outcome = "self_rated_health",
+  factors = c("treatment", "dose"),
+  test = "mean"
+)
+
+}
+\seealso{
+\code{\link{mfcurve_preprocessing}}, \code{\link{mfcurve_plotting}}
 }
