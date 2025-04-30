@@ -15,74 +15,98 @@ knitr::opts_chunk$set(
 )
 ```
 
-# mfcurve: Multi-Factor Curve Analysis in R
+# mfcurve: Visualizing Multifactorial Research Designs
 
-## Overview
 
-`mfcurve` is an R package designed for analyzing multi-factor models, similar to the Stata `mfcurve` ado file. It provides functions for preprocessing data, conducting statistical tests, and generating visualizations to explore group differences in mean outcomes with confidence intervals.
+## Motivation
+
+Experimental research designs often combine multiple treatments. A medical trial, for example, might study patient health depending on the drug administered (e.g., A, B, or C) and its dose (low or high). Such designs are useful for studying treatment effect heterogeneity, but they generate a large number of unique treatment combinations. While the number of unique combinations in the example above is still manageable (3 drugs × 2 doses = 6 combinations), the total quickly grows as additional treatments are introduced (e.g., blinding status: single vs. double-blind) or as treatments include more levels (e.g., drugs D and E). In the social sciences, where multifactorial designs typically appear as survey or choice experiments, the number of distinct treatment conditions can easily reach into the hundreds or thousands.
+
+This poses a significant challenge for researchers: How can they visualize the outcome across all these different treatment conditions comprehensively and transparently? `mfcurve` is designed to provide a solution to this problem. 
+
+
+## What is an mfcurve?
+
+An `mfcurve` consists of two panels:
+
+- The **top panel** displays the mean outcome value for each experimental condition (i.e., each unique combination of factor levels). Group means are ordered by size and can optionally be supplemented with confidence intervals and significance markers. 
+
+- The **lower panel** shows, for each experimental condition, which factor levels define that condition. Colored markers indicate whether a given factor level was present or absent in that condition. 
+
+This layout helps users quickly grasp the full range of outcomes across all treatment conditions. It also visualizes which specific treatments—or treatment combinations—affect the outcome: Treatments that lead to higher or lower outcomes will be characterized by markers that discernibly cluster in the bottom panel. To support further exploration, the plot is generated using `plotly`, making it fully interactive: users can hover over group means to access detailed information such as group size, mean outcome, and confidence intervals.
+
 
 ## Installation
 
-To install the package from GitHub, you can use the following commands:
-
+You can install the stable release of `mfcurve` from CRAN:
 ```{r, eval = FALSE}
-# Install devtools if not already installed
+install.packages("mfcurve")
+```
+
+To access the development version with the latest features and fixes, install the package from GitHub:
+```{r, eval = FALSE}
+# If devtools is not already installed
 install.packages("devtools")
 
-# Install mfcurve package from GitHub
-devtools::install_github("cweileder/mfcurve")
+# Install the mfcurve development version from GitHub
+devtools::install_github("XAM12/mfcurve_R")
 ```
 
-## Key Features
 
-- **Preprocessing**: Filter missing values, handle factors, and create groups.
-- **Statistical Testing**: Conduct statistical tests (e.g., t-tests) on group means to flag significant differences.
-- **Visualization**: Generate visualizations showing group differences with confidence intervals.
+## Example 1: A Multifactorial Research Design
+Consider the extended medical trial mentioned above with five drugs (A-E), two doses (low vs. high), and two blindings (single vs. double-blind). We simulate data for this 5 × 2 × 2 design, featuring 20 unique treatment conditions:
 
-## Example Usage
-
-### 1. Preprocessing Data
-
-```{r, eval = FALSE}
-# Load necessary libraries
+```{r}
 library(mfcurve)
 library(dplyr)
+set.seed(123)
 
-# Sample data
-data <- data.frame(
-  wage = c(10, 20, 30, 40, 15, 25, 35, 45),
-  race = factor(c("black", "black", "white", "white", "black", "white", "black", "white")),
-  union = factor(c(1, 0, 1, 0, 1, 0, 1, 0))
+# Simulate data with 1,000 observations (5 × 2 × 2 design)
+set.seed(123)
+df <- data.frame(
+  drug = sample(c("A", "B", "C", "D", "E"), 1000, replace = TRUE),
+  dose = sample(c("low", "high"), 1000, replace = TRUE),
+  blinding = sample(c("single-blind", "double-blind"), 1000, replace = TRUE)
 )
 
-# Preprocess the data
-preprocessed_data <- mfcurve_preprocessing(data, "wage", c("race", "union"))
+# Simulate health outcome (1–10 scale)
+df$health <- 6 +
+  ifelse(df$drug == "B", 0.5,        # beneficial
+  ifelse(df$drug == "E", -0.5, 0)) + # detrimental
+  ifelse(df$blinding == "single-blind", 0.4, 0) +  # stronger effect for single-blind
+  rnorm(1000, 0, 1.2)  # noise
 
-# View the preprocessed data
-print(preprocessed_data)
+# Ensure values are between 1 and 10
+df$health <- pmin(pmax(df$health, 1), 10)
+
 ```
 
-### 2. Conducting Statistical Tests
 
-```{r, eval = FALSE}
-# Conduct statistical tests
-test_results <- mfcurve_stat_test(preprocessed_data, level = 0.05, test = "mean")
+Next, we can plot the mfcurve by specifying the dataset, outcome, and factors:
+```{r}
+mfcurve(df, "health", c("drug", "dose", "blinding"), mode = "expanded")
 
-# View the test results
-print(test_results)
 ```
 
-### 3. Plotting the Results
-
-```{r, eval = FALSE}
-# Plot the results
-mfcurve_plot(test_results)
+```{r, echo = FALSE, out.width = "100%"}
+knitr::include_graphics("example1.png")
 ```
+(Note: The graph you will get when re-running this example in R is generated with `plotly` and therefore interactive.)
+
+What does the mfcurve show? First, there is considerable variation in health outcomes across groups. [...]
+
+## Example 2: Multivariate Description
+Add second example [TBD]
+
+## Under The Hood 
+Describe/explain the two subroutines for preprocessing and plotting 
+
+## Customization and Options
 
 ## Contributing
-
+[remove this?]
 Contributions are welcome! Please fork this repository and submit a pull request with your changes.
 
 ## License
+TBD
 
-This package is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
