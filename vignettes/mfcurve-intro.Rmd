@@ -172,14 +172,15 @@ Just like the previous `mfcurve`, this graph succinctly conveys the overall outc
 In the context of non-experimental data, `mfcurve` does not support any causal claims. Still, it provides a crisp and engaging visualization that conveys both the distribution of a target variable and its associations with other group characteristics. As such, `mfcurve` can be a useful tool beyond the realm of experimental research designs.
 
 
-## Under The Hood & Customization
+## Under The Hood
 `mfcurve` is a wrapper that sequentially calls `mfcurve_preprocessing()` and `mfcurve_plotting()`. While we expect that most users will find this wrapper sufficient for their needs, there may be instances where calling only one of the functions is preferable—for instance, when the dataset has been preprocessed manually and requires only plotting. For more information about `mfcurve_preprocessing()` and `mfcurve_plotting()`, please refer to the documentation.
 
-Finally, note that `mfcurve` returns a `plotly` object. This means you can customize the resulting graph using any standard `plotly` syntax. 
 
-## Contributing
-Feedback, contributions, and bug reports are welcome! Please fork this repository and submit a pull request with your changes.
+## Customization & Options
+`mfcurve` includes a few native design options, such as adding a title or plotting the origin (see documentation). Remember that `mfcurve` return a `plotly` object. This means you can customize the graph further using any standard `plotly` syntax. 
 
-## License
-TBD
 
+## Contributions & Licence
+This package was created by Maximilian Frank, Daniel Krähmer, and Claudia Weileder. It builds on the Stata command `mfcurve` originally developed by Daniel Krähmer (see https://ideas.repec.org/c/boc/bocode/s459224.html). We welcome feedback, suggestions, and contributions! Feel free to fork the GitHub repository and submit a pull request with your changes.
+
+[TBD]
