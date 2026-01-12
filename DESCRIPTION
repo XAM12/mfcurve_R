@@ -20,7 +20,8 @@ Imports:
     stats,
     plotly,
     tidyr,
-    tidyselect
+    tidyselect,
+    magrittr
 Suggests: 
     knitr,
     rmarkdown,
