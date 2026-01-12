@@ -21,7 +21,8 @@ Imports:
     plotly,
     tidyr,
     tidyselect,
-    magrittr
+    magrittr,
+    rlang
 Suggests: 
     knitr,
     rmarkdown,
