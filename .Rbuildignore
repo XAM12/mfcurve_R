@@ -3,7 +3,3 @@
 ^LICENSE\.md$
 ^doc$
 ^Meta$
-^code_max$
-^preprocessing_old\.R$
-^plotting_old\.R$
-^mfcurve_old\.R$
