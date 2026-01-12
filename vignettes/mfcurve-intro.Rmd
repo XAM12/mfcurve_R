@@ -183,8 +183,7 @@ In the context of non-experimental data, `mfcurve` does not support any causal c
 
 ## Contributions & Licence
 This package was created by Maximilian Frank, Daniel Krähmer, and Claudia Weileder. It builds on the Stata command `mfcurve` originally developed by Daniel Krähmer (see https://ideas.repec.org/c/boc/bocode/s459224.html). We welcome feedback, suggestions, and contributions! Feel free to fork the GitHub repository and submit a pull request with your changes.
-
-[TBD]
+This package is licensed under GNU General Public License v3.0 or later. See the LICENSE file for details.
 
 ## References
 Krähmer, D., & Young, C. (forthcoming). Visualizing vastness: Graphical methods for multiverse analysis. PLOS One.
