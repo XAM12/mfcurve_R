@@ -6,10 +6,13 @@
 #' @param data              A data frame containing the variables.
 #' @param outcome           Name of the numeric outcome variable (string).
 #' @param factors           Character vector of factor variable names for grouping.
-#' @param test              Reference for t-tests: "mean", "zero", or "leave-one-out". Passed to preprocessing. Default is "mean".
+#' @param test              Reference for t-tests: "mean", "zero", or "leave-one-out".
+#'                          Passed to preprocessing. Default is "mean".
 #' @param alpha             Significance level for t-tests and confidence intervals. Default is 0.05.
 #' @param showTitle         Logical. Show the plot title? Default is TRUE.
-#' @param SaveProcessedData Logical. Save group-level statistics to the global environment? Default is FALSE.
+#' @param SaveProcessedData Logical. If TRUE, saves group-level statistics to the **current
+#'                          working directory** as timestamped files: \code{group_stats_*.csv}
+#'                          and \code{group_stats_*.rds}. Default is FALSE.
 #' @param mode              Factor labeling mode: "collapsed" (default) or "expanded".
 #' @param rounding          Number of digits to round outcome statistics. Default is 2.
 #' @param plotOrigin        Logical. Force axes to include 0? Default is FALSE.
@@ -18,7 +21,8 @@
 #' @param showSigStars      Logical. Show markers for significant values? Default is TRUE.
 #'
 #' @return Invisibly returns the plotly object representing the two-panel plot.
-#' If \code{SaveProcessedData = TRUE}, also saves the group statistics as \code{group_stats} in the global environment.
+#' If \code{SaveProcessedData = TRUE}, also writes \code{group_stats} to CSV and RDS
+#' in the working directory and prints the file paths.
 #'
 #' @details
 #' \code{mfcurve()} plots the mean of an outcome variable across all combinations of multiple grouping factors, producing a two-panel interactive plot.
@@ -64,14 +68,14 @@
 #' )
 #'
 #' @importFrom magrittr %>%
-#'
 #' @export
 
-mfcurve <- function(data, outcome, factors, test = "mean", alpha = 0.05, showTitle = TRUE,
-                    SaveProcessedData = FALSE, mode = "collapsed", rounding = 2,
-                    plotOrigin = FALSE, CI = TRUE, showGrandMean = TRUE, showSigStars = TRUE) {
-
-  # Run preprocessing (pass test argument)
+mfcurve <- function(
+    data, outcome, factors, test = "mean", alpha = 0.05, showTitle = TRUE,
+    SaveProcessedData = FALSE, mode = "collapsed", rounding = 2,
+    plotOrigin = FALSE, CI = TRUE, showGrandMean = TRUE, showSigStars = TRUE
+) {
+  # Run preprocessing
   results <- mfcurve_preprocessing(
     data = data,
     outcome = outcome,
@@ -80,26 +84,38 @@ mfcurve <- function(data, outcome, factors, test = "mean", alpha = 0.05, showTit
     test = test
   )
 
-  # Optionally save to global environment
-  if (SaveProcessedData) {
-    assign("group_stats", results$group_stats, envir = .GlobalEnv)
-    message("Saved 'group_stats' to the global environment.")
+  # Optionally save processed table to working directory (not .GlobalEnv)
+  if (isTRUE(SaveProcessedData)) {
+    sanitize <- function(x) gsub("[^A-Za-z0-9_-]+", "_", x)
+    ts <- format(Sys.time(), "%Y%m%d-%H%M%S")
+    base <- paste0("group_stats_", sanitize(outcome), "_", ts)
+
+    csv_path <- file.path(getwd(), paste0(base, ".csv"))
+    rds_path <- file.path(getwd(), paste0(base, ".rds"))
+
+    utils::write.csv(results$group_stats, csv_path, row.names = FALSE)
+    saveRDS(results$group_stats, rds_path)
+
+    message("Saved group statistics to:\n  - ", normalizePath(csv_path, mustWork = FALSE),
+            "\n  - ", normalizePath(rds_path, mustWork = FALSE))
   }
 
   # Plot
-  mfcurve_plotting(
+  p <- mfcurve_plotting(
     group_stats_vis = results$group_stats_vis,
-    lower_data = results$lower_data,
-    grand_mean = results$grand_mean,
-    outcome = outcome,
-    factors = factors,
-    level = results$level,
-    rounding = rounding,
-    showTitle = showTitle,
-    plotOrigin = plotOrigin,
-    CI = CI,
-    mode = mode,
-    showGrandMean = showGrandMean,
-    showSigStars = showSigStars
+    lower_data      = results$lower_data,
+    grand_mean      = results$grand_mean,
+    outcome         = outcome,
+    factors         = factors,
+    level           = results$level,
+    rounding        = rounding,
+    showTitle       = showTitle,
+    plotOrigin      = plotOrigin,
+    CI              = CI,
+    mode            = mode,
+    showGrandMean   = showGrandMean,
+    showSigStars    = showSigStars
   )
+
+  invisible(p)
 }

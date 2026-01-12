@@ -18,8 +18,8 @@
 #' @param showSigStars    Logical. Flag significant results. Default is TRUE.
 #'
 #' @return A plotly object (invisible).
+#' @importFrom rlang .data
 #' @export
-
 mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
                              outcome, factors, level,
                              rounding = 2, showTitle = TRUE,
@@ -30,13 +30,13 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
 
   if (mode == "expanded") {
     lower_data <- lower_data %>%
-      dplyr::mutate(factor = paste(factor, level, sep = " ")) %>%
+      dplyr::mutate(factor = paste(.data$factor, .data$level, sep = " ")) %>%
       dplyr::mutate(
-        factor_var = sub("^(.*?) .*", "\\1", factor),
-        factor_lbl = factor
+        factor_var = base::sub("^(.*?) .*", "\\1", .data$factor),
+        factor_lbl = .data$factor
       ) %>%
-      dplyr::group_by(factor_var) %>%
-      dplyr::arrange(factor_var, factor_lbl, .by_group = TRUE) %>%
+      dplyr::group_by(.data$factor_var) %>%
+      dplyr::arrange(.data$factor_var, .data$factor_lbl, .by_group = TRUE) %>%
       dplyr::ungroup()
 
     factor_blocks <- split(lower_data, lower_data$factor_var)
@@ -54,10 +54,10 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
 
     factor_positions <- data.frame(factor = factor_order, y = y_pos)
     lower_data$factor <- lower_data$factor_lbl
-    lower_data <- dplyr::select(lower_data, -factor_var, -factor_lbl)
+    lower_data <- dplyr::select(lower_data, - .data$factor_var, - .data$factor_lbl)
     lower_data <- lower_data %>%
-      dplyr::mutate(factor_group = sub("^(.*?) .*", "\\1", factor)) %>%
-      dplyr::mutate(level_code = as.numeric(factor(factor_group)))
+      dplyr::mutate(factor_group = base::sub("^(.*?) .*", "\\1", .data$factor)) %>%
+      dplyr::mutate(level_code = as.numeric(base::factor(.data$factor_group)))
 
   } else {
     factor_levels <- unique(lower_data$factor)
@@ -67,24 +67,25 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
     )
 
     lower_data <- lower_data %>%
-      dplyr::mutate(factor_level_combo = paste(factor, level, sep = ":")) %>%
-      dplyr::mutate(level_code = as.numeric(factor(factor_level_combo)))
+      dplyr::mutate(factor_level_combo = paste(.data$factor, .data$level, sep = ":")) %>%
+      dplyr::mutate(level_code = as.numeric(base::factor(.data$factor_level_combo)))
   }
 
   lower_data <- dplyr::left_join(lower_data, factor_positions, by = "factor")
 
-  group_stats_vis <- dplyr::mutate(group_stats_vis,
-                                   mean_outcome_vis = round(mean_outcome, rounding),
-                                   sd_outcome_vis = round(sd_outcome, rounding),
-                                   ci_lower_vis = round(ci_lower, rounding),
-                                   ci_upper_vis = round(ci_upper, rounding),
-                                   ci_width_vis = round(ci_width, rounding)
+  group_stats_vis <- dplyr::mutate(
+    group_stats_vis,
+    mean_outcome_vis = round(.data$mean_outcome, rounding),
+    sd_outcome_vis   = round(.data$sd_outcome,   rounding),
+    ci_lower_vis     = round(.data$ci_lower,     rounding),
+    ci_upper_vis     = round(.data$ci_upper,     rounding),
+    ci_width_vis     = round(.data$ci_width,     rounding)
   )
 
   x_min <- min(group_stats_vis$rank) - 0.5
   x_max <- max(group_stats_vis$rank) + 0.5
-  y_min <- min(group_stats_vis$ci_lower_vis)
-  y_max <- max(group_stats_vis$ci_upper_vis)
+  y_min <- min(group_stats_vis$ci_lower_vis, na.rm = TRUE)
+  y_max <- max(group_stats_vis$ci_upper_vis, na.rm = TRUE)
 
   offset <- 0.08 * (y_max - y_min)
   y_max <- y_max + offset + 0.05 * (y_max - y_min)
@@ -102,67 +103,68 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
         x = ~rank,
         y = ~mean_outcome_vis,
         error_y = list(
-          type = 'data',
+          type = "data",
           symmetric = FALSE,
           array = ~ci_upper_vis - mean_outcome_vis,
           arrayminus = ~mean_outcome_vis - ci_lower_vis
         ),
-        type = 'scatter',
-        mode = 'markers',
-        marker = list(symbol = ~ifelse(sig, 'diamond', 'circle')),
+        type = "scatter",
+        mode = "markers",
+        marker = list(symbol = ~ifelse(sig, "diamond", "circle")),
         text = ~paste0(
           "Mean: ", mean_outcome_vis, "<br>",
           "SD: ", sd_outcome_vis, "<br>",
           round(level * 100), "%-CI: [", ci_lower_vis, ", ", ci_upper_vis, "]<br>",
           "Group size: ", n
         ),
-        hoverinfo = 'text',
-        name = 'Group Means'
+        hoverinfo = "text",
+        name = "Group Means"
       )
   } else {
     upper_plot <- upper_plot %>%
       plotly::add_trace(
         x = ~rank,
         y = ~mean_outcome_vis,
-        type = 'scatter',
-        mode = 'markers',
-        marker = list(symbol = ~ifelse(sig, 'diamond', 'circle')),
+        type = "scatter",
+        mode = "markers",
+        marker = list(symbol = ~ifelse(sig, "diamond", "circle")),
         text = ~paste0(
           "Mean: ", mean_outcome_vis, "<br>",
           "SD: ", sd_outcome_vis, "<br>",
           "Group size: ", n
         ),
-        hoverinfo = 'text',
-        name = 'Group Means'
+        hoverinfo = "text",
+        name = "Group Means"
       )
   }
 
-  # Grand Mean zuerst, dann Significant values
-    if (showGrandMean) {
-      upper_plot <- upper_plot %>%
-        plotly::add_trace(
-          x = c(x_min, x_max),
-          y = c(grand_mean, grand_mean),
-          type = 'scatter',
-          mode = 'lines',
-          line = list(dash = 'dash'),
-          name = 'Grand Mean'
-        )
-    }
-    if (showSigStars) {
-      upper_plot <- upper_plot %>%
-        plotly::add_trace(
-          data = dplyr::filter(group_stats_vis, sig),
-          x = ~rank,
-          y = ~ci_upper_vis + offset,
-          mode = 'markers',
-          type = 'scatter',
-          marker = list(symbol = "star-dot", size = 8, color = "black"),
-          name = "Significant values",
-          hoverinfo = 'skip',
-          showlegend = TRUE
-        )
-    }
+  if (showGrandMean) {
+    upper_plot <- upper_plot %>%
+      plotly::add_trace(
+        x = c(x_min, x_max),
+        y = c(grand_mean, grand_mean),
+        type = "scatter",
+        mode = "lines",
+        line = list(dash = "dash"),
+        name = "Grand Mean"
+      )
+  }
+
+  if (showSigStars) {
+    upper_plot <- upper_plot %>%
+      plotly::add_trace(
+        data = dplyr::filter(group_stats_vis, .data$sig),
+        x = ~rank,
+        y = ~ci_upper_vis + offset,
+        mode = "markers",
+        type = "scatter",
+        marker = list(symbol = "star-dot", size = 8, color = "black"),
+        name = "Significant values",
+        hoverinfo = "skip",
+        showlegend = TRUE
+      )
+  }
+
   upper_plot <- upper_plot %>%
     plotly::layout(
       xaxis = list(range = c(x_min, x_max), fixedrange = TRUE),
@@ -174,10 +176,10 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
     x = ~rank,
     y = ~y,
     text = ~paste("Factor:", factor, "<br>Level:", level),
-    hoverinfo = 'text',
-    type = 'scatter',
-    mode = 'markers',
-    marker = list(size = 10, color = ~level_code, colorscale = 'Viridis'),
+    hoverinfo = "text",
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, color = ~level_code, colorscale = "Viridis"),
     showlegend = FALSE
   ) %>%
     plotly::layout(
@@ -201,13 +203,13 @@ mfcurve_plotting <- function(group_stats_vis, lower_data, grand_mean,
     combined <- combined %>%
       plotly::layout(
         title = list(text = title, x = 0.5),
-        yaxis = list(title = outcome),
+        yaxis  = list(title = outcome),
         yaxis2 = list(title = "Factors")
       )
   } else {
     combined <- combined %>%
       plotly::layout(
-        yaxis = list(title = outcome),
+        yaxis  = list(title = outcome),
         yaxis2 = list(title = "Factors")
       )
   }
