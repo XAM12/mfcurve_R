@@ -42,6 +42,10 @@ mfcurve_plotting(
 \item{CI}{Logical. Display confidence intervals? Default is TRUE.}
 
 \item{mode}{Labeling mode for the lower panel: "collapsed" (default) or "expanded".}
+
+\item{showGrandMean}{Logical. Show the grand mean overall groups. Default is TRUE.}
+
+\item{showSigStars}{Logical. Flag significant results. Default is TRUE.}
 }
 \value{
 A plotly object (invisible).

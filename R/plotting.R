@@ -14,6 +14,8 @@
 #' @param plotOrigin      Logical. Force axes to include 0? Default is FALSE.
 #' @param CI              Logical. Display confidence intervals? Default is TRUE.
 #' @param mode            Labeling mode for the lower panel: "collapsed" (default) or "expanded".
+#' @param showGrandMean   Logical. Show the grand mean overall groups. Default is TRUE.
+#' @param showSigStars    Logical. Flag significant results. Default is TRUE.
 #'
 #' @return A plotly object (invisible).
 #' @export
