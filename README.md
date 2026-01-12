@@ -23,7 +23,7 @@ To install the package from GitHub, follow these steps:
 install.packages("devtools")
 
 # Install mfcurve package from GitHub
-devtools::install_github("cweileder/mfcurve")
+devtools::install_github("XAM12/mfcurve_R")
 ```
 
 ## Usage
@@ -79,11 +79,11 @@ vignette("introduction-to-mfcurve")
 ```
 
 ## Contributing
-Contributions are welcome! If you find bugs or have suggestions, feel free to open an issue or submit a pull request on [GitHub](https://github.com/cweileder/mfcurve).
+Contributions are welcome! If you find bugs or have suggestions, feel free to open an issue or submit a pull request on [GitHub](https://github.com/XAM12/mfcurve_R).
 
 ## License
-This package is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This package is licensed under GNU General Public License v3.0 or later. See the [LICENSE](LICENSE) file for details.
 
 ## Contact
-For questions or support, please contact:
-- NAME (Email: MAIL)
+For questions or suggestions, please contact:
+- Maximilian Frank (Email: maximilian.frank@psy.lmu.de)
