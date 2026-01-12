@@ -82,7 +82,7 @@ vignette("introduction-to-mfcurve")
 Contributions are welcome! If you find bugs or have suggestions, feel free to open an issue or submit a pull request on [GitHub](https://github.com/XAM12/mfcurve_R).
 
 ## License
-This package is licensed under GNU General Public License v3.0 or later. See the [LICENSE](LICENSE) file for details.
+This package is licensed under GNU General Public License v3.0 or later. See the [LICENSE](LICENSE.md) file for details.
 
 ## Contact
 For questions or suggestions, please contact:
