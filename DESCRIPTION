@@ -3,14 +3,14 @@ Type: Package
 Title: Multi-Factor Curve Analysis for Grouped Data in R
 Version: 1.0.0
 Authors@R: c(
-    person("Daniel", "Krähmer", email = "Daniel.Kraehmer@soziologie.uni-muenchen.de", role = c("aut", "cre")),
-    person("Maximilian", "Frank", email = "maximilian.frank@psy.lmu.de", role = "aut"),
-    person("Claudia", "Weileder", email = "claudia.weileder@gmail.com", role = "aut"))
-Maintainer: Daniel Krähmer <Daniel.Kraehmer@soziologie.uni-muenchen.de>
+    person("Maximilian", "Frank", email = "maximilian.frank@psy.lmu.de", role = c("aut", "cre")),
+	person("Daniel", "Krähmer", email = "Daniel.Kraehmer@soziologie.uni-muenchen.de", role = "aut"),
+    person("Claudia", "Weileder", email = "maximilian.frank@psy.lmu.de", role = "aut"))
+Maintainer: Maximilian Frank <maximilian.frank@psy.lmu.de>
 Description: Provides functions for multi-factor curve analysis, replicating and
     extending the functionality of the Stata mfcurve ado. Includes data preprocessing,
     statistical testing, and visualization of results with confidence intervals.
-License: MIT + file LICENSE
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

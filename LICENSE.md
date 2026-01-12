@@ -1,7 +1,7 @@
 # GNU General Public License v3.0 or later (GPL-3.0-or-later)
 
 **Package:** mfcurve - Multi-Factor Curve Analysis for Grouped Data in R  
-**Copyright © 2025** Daniel Krähmer, Maximilian Frank, Claudia Weileder
+**Copyright © 2025** Maximilian Frank, Daniel Krähmer, Claudia Weileder
 
 This program is free software: you can redistribute it and/or modify it under the terms of the
 **GNU General Public License** as published by the Free Software Foundation, either **version 3**
