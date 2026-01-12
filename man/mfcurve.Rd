@@ -27,13 +27,16 @@ mfcurve(
 
 \item{factors}{Character vector of factor variable names for grouping.}
 
-\item{test}{Reference for t-tests: "mean", "zero", or "leave-one-out". Passed to preprocessing. Default is "mean".}
+\item{test}{Reference for t-tests: "mean", "zero", or "leave-one-out".
+Passed to preprocessing. Default is "mean".}
 
 \item{alpha}{Significance level for t-tests and confidence intervals. Default is 0.05.}
 
 \item{showTitle}{Logical. Show the plot title? Default is TRUE.}
 
-\item{SaveProcessedData}{Logical. Save group-level statistics to the global environment? Default is FALSE.}
+\item{SaveProcessedData}{Logical. If TRUE, saves group-level statistics to the \strong{current
+working directory} as timestamped files: \code{group_stats_*.csv}
+and \code{group_stats_*.rds}. Default is FALSE.}
 
 \item{mode}{Factor labeling mode: "collapsed" (default) or "expanded".}
 
@@ -49,7 +52,8 @@ mfcurve(
 }
 \value{
 Invisibly returns the plotly object representing the two-panel plot.
-If \code{SaveProcessedData = TRUE}, also saves the group statistics as \code{group_stats} in the global environment.
+If \code{SaveProcessedData = TRUE}, also writes \code{group_stats} to CSV and RDS
+in the working directory and prints the file paths.
 }
 \description{
 Calls \code{mfcurve_preprocessing()} and \code{mfcurve_plotting()} in sequence

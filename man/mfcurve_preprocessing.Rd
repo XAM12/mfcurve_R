@@ -18,13 +18,13 @@ mfcurve_preprocessing(data, outcome, factors, alpha = 0.05, test = "mean")
 \item{test}{Reference for t-tests: "mean" (grand mean), "leave-one-out" (mean of all other groups), or "zero" (testing against 0).}
 }
 \value{
-A list containing:
+A list with:
 \describe{
-\item{group_stats}{A data frame with computed statistics and confidence interval bounds.}
-\item{group_stats_vis}{A visualization-ready version with rounded values.}
-\item{lower_data}{A data frame for the lower panel of the plot (without y positions).}
-\item{grand_mean}{The overall mean of the outcome variable.}
-\item{level}{The confidence level used.}
+\item{group_stats}{Data frame with computed statistics and CI bounds.}
+\item{group_stats_vis}{Visualization-ready version with rounded values.}
+\item{lower_data}{Data for the lower panel (without y positions).}
+\item{grand_mean}{Overall mean of the outcome variable.}
+\item{level}{Confidence level used.}
 }
 }
 \description{
