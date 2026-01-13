@@ -67,9 +67,9 @@ print(plot)
 Detailed documentation for each function is available within R:
 
 ```r
-?mfcurve_preprocessing
-?mfcurve_plotting
 ?mfcurve
+?mfcurve_plotting
+?mfcurve_preprocessing
 ```
 
 ## Vignette
