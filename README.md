@@ -43,19 +43,20 @@ data <- data.frame(
 )
 
 # Preprocess data with two factors
-preprocessed_data <- mfcurve_preprocessing(data, outcome_var = "outcome", factors = c("factor1", "factor2"))
+preprocessed_data <- mfcurve_preprocessing(data, outcome = "outcome", factors = c("factor1","factor2"))
 ```
 
-### 2. Conduct Statistical Tests
+### 2. Visualize Results
 
 ```r
-test_results <- mfcurve_stat_test(preprocessed_data, test = "mean", level = 0.95)
-```
-
-### 3. Visualize Results
-
-```r
-plot <- mfcurve_plot(test_results, title = "Group Differences in Outcome")
+plot <- mfcurve_plotting(
+  group_stats_vis = preprocessed_data$group_stats_vis,
+  lower_data      = preprocessed_data$lower_data,
+  grand_mean      = preprocessed_data$grand_mean,
+  outcome         = "outcome",
+  factors         = c("factor1","factor2"),
+  level           = preprocessed_data$level
+)
 print(plot)
 ```
 
@@ -67,22 +68,22 @@ Detailed documentation for each function is available within R:
 
 ```r
 ?mfcurve_preprocessing
-?mfcurve_stat_test
-?mfcurve_plot
+?mfcurve_plotting
+?mfcurve
 ```
 
 ## Vignette
 For a comprehensive guide on using `mfcurve`, refer to the vignette:
 
 ```r
-vignette("introduction-to-mfcurve")
+vignette("mfcurve-intro")
 ```
 
 ## Contributing
 Contributions are welcome! If you find bugs or have suggestions, feel free to open an issue or submit a pull request on [GitHub](https://github.com/XAM12/mfcurve_R).
 
 ## License
-This package is licensed under GNU General Public License v3.0 or later. See the [LICENSE](LICENSE.md) file for details.
+This package is licensed under GNU General Public License v3.0 or later. See the LICENSE on GitHub for more details: https://github.com/XAM12/mfcurve_R/blob/main/LICENSE.md
 
 ## Contact
 For questions or suggestions, please contact:
