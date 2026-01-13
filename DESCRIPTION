@@ -1,7 +1,7 @@
 Package: mfcurve
 Type: Package
-Title: Multi-Factor Curve Analysis for Grouped Data in R
-Version: 1.0.0
+Title: Multi-Factor Curve Analysis for Grouped Data in 'R'
+Version: 1.0.1
 Authors@R: c(
     person("Maximilian", "Frank", email = "maximilian.frank@psy.lmu.de", role = c("aut", "cre")),
 	person("Daniel", "Krähmer", email = "Daniel.Kraehmer@soziologie.uni-muenchen.de", role = "aut"),
