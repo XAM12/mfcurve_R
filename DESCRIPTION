@@ -8,7 +8,7 @@ Authors@R: c(
     person("Claudia", "Weileder", email = "maximilian.frank@psy.lmu.de", role = "aut"))
 Maintainer: Maximilian Frank <maximilian.frank@psy.lmu.de>
 Description: Provides functions for multi-factor curve analysis, replicating and
-    extending the functionality of the Stata mfcurve ado. Includes data preprocessing,
+    extending the functionality of the the 'Stata' 'mfcurve' ado by Daniel Krähmer. Includes data preprocessing,
     statistical testing, and visualization of results with confidence intervals.
 License: GPL (>= 3)
 Encoding: UTF-8
@@ -29,3 +29,5 @@ Suggests:
     testthat (>= 3.0.0),
     withr
 VignetteBuilder: knitr
+URL: https://github.com/XAM12/mfcurve_R
+BugReports: https://github.com/XAM12/mfcurve_R/issues
