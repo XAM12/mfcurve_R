@@ -10,9 +10,10 @@
 #'                          Passed to preprocessing. Default is "mean".
 #' @param alpha             Significance level for t-tests and confidence intervals. Default is 0.05.
 #' @param showTitle         Logical. Show the plot title? Default is TRUE.
-#' @param SaveProcessedData Logical. If TRUE, saves group-level statistics to the **current
-#'                          working directory** as timestamped files: \code{group_stats_*.csv}
-#'                          and \code{group_stats_*.rds}. Default is FALSE.
+#' @param SaveProcessedData Logical. If TRUE, writes group-level statistics to the
+#'                          session temporary directory (\code{tempdir()}) as timestamped
+#'                          files: \code{group_stats_*.csv} and \code{group_stats_*.rds}.
+#'                          Default is FALSE.
 #' @param mode              Factor labeling mode: "collapsed" (default) or "expanded".
 #' @param rounding          Number of digits to round outcome statistics. Default is 2.
 #' @param plotOrigin        Logical. Force axes to include 0? Default is FALSE.
@@ -22,7 +23,7 @@
 #'
 #' @return Invisibly returns the plotly object representing the two-panel plot.
 #' If \code{SaveProcessedData = TRUE}, also writes \code{group_stats} to CSV and RDS
-#' in the working directory and prints the file paths.
+#' in \code{tempdir()} and prints the file paths.
 #'
 #' @details
 #' \code{mfcurve()} plots the mean of an outcome variable across all combinations of multiple grouping factors, producing a two-panel interactive plot.
@@ -69,7 +70,6 @@
 #'
 #' @importFrom magrittr %>%
 #' @export
-
 mfcurve <- function(
     data, outcome, factors, test = "mean", alpha = 0.05, showTitle = TRUE,
     SaveProcessedData = FALSE, mode = "collapsed", rounding = 2,
@@ -77,29 +77,30 @@ mfcurve <- function(
 ) {
   # Run preprocessing
   results <- mfcurve_preprocessing(
-    data = data,
+    data    = data,
     outcome = outcome,
     factors = factors,
-    alpha = alpha,
-    test = test
+    alpha   = alpha,
+    test    = test
   )
-
-  # Optionally save processed table to working directory (not .GlobalEnv)
+  
+  # Optionally write processed df to tempdir()
   if (isTRUE(SaveProcessedData)) {
+    out_dir <- tempdir()
     sanitize <- function(x) gsub("[^A-Za-z0-9_-]+", "_", x)
     ts <- format(Sys.time(), "%Y%m%d-%H%M%S")
     base <- paste0("group_stats_", sanitize(outcome), "_", ts)
-
-    csv_path <- file.path(getwd(), paste0(base, ".csv"))
-    rds_path <- file.path(getwd(), paste0(base, ".rds"))
-
+    
+    csv_path <- file.path(out_dir, paste0(base, ".csv"))
+    rds_path <- file.path(out_dir, paste0(base, ".rds"))
+    
     utils::write.csv(results$group_stats, csv_path, row.names = FALSE)
     saveRDS(results$group_stats, rds_path)
-
+    
     message("Saved group statistics to:\n  - ", normalizePath(csv_path, mustWork = FALSE),
             "\n  - ", normalizePath(rds_path, mustWork = FALSE))
   }
-
+  
   # Plot
   p <- mfcurve_plotting(
     group_stats_vis = results$group_stats_vis,
@@ -116,6 +117,6 @@ mfcurve <- function(
     showGrandMean   = showGrandMean,
     showSigStars    = showSigStars
   )
-
+  
   invisible(p)
 }
