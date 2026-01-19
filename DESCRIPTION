@@ -1,15 +1,16 @@
 Package: mfcurve
 Type: Package
 Title: Multi-Factor Curve Analysis for Grouped Data in 'R'
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(
     person("Maximilian", "Frank", email = "maximilian.frank@psy.lmu.de", role = c("aut", "cre")),
 	person("Daniel", "Krähmer", email = "Daniel.Kraehmer@soziologie.uni-muenchen.de", role = "aut"),
     person("Claudia", "Weileder", email = "maximilian.frank@psy.lmu.de", role = "aut"))
 Maintainer: Maximilian Frank <maximilian.frank@psy.lmu.de>
-Description: Provides functions for multi-factor curve analysis, replicating and
-    extending the functionality of the the 'Stata' 'mfcurve' ado by Daniel Krähmer. Includes data preprocessing,
-    statistical testing, and visualization of results with confidence intervals.
+Description: Implements multi-factor curve analysis for grouped data in 'R', replicating and
+    extending the functionality of the the 'Stata' ado 'mfcurve' (Krähmer, 2023) <https://ideas.repec.org/c/boc/bocode/s459224.html>. 
+	Related to the idea of specification curve analysis (Simonsohn, Simmons, and Nelson, 2020) <doi:10.1038/s41562-020-0912-z>.
+	Includes data preprocessing, statistical testing, and visualization of results with confidence intervals.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
